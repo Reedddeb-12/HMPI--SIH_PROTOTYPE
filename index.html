@@ -43,6 +43,9 @@
                 <button class="tab active" onclick="showTab('data-entry')">
                     <i class="fas fa-database"></i> Data Entry
                 </button>
+                <button class="tab" onclick="showTab('disease-prediction')">
+                    <i class="fas fa-heartbeat"></i> Disease Prediction
+                </button>
                 <button class="tab" onclick="showTab('mapping')">
                     <i class="fas fa-map"></i> Interactive Map
                 </button>
@@ -186,6 +189,88 @@
                 </div>
             </div>
 
+            <!-- Disease Prediction Tab -->
+            <div id="disease-prediction" class="tab-content">
+                <h2>AI-Powered Disease Risk Prediction</h2>
+                <p>Advanced machine learning analysis of health risks based on heavy metal exposure levels.</p>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-brain"></i> ML Model Status</h3>
+                    <div id="ml-status" class="alert alert-info">
+                        <i class="fas fa-spinner fa-spin"></i> Loading disease prediction model...
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-calculator"></i> Prediction Controls</h3>
+                    <div style="text-align: center;">
+                        <button class="calculate-btn" onclick="runDiseaseAnalysis()" id="predict-btn" disabled>
+                            <i class="fas fa-microscope"></i> Run Disease Risk Analysis
+                        </button>
+                        <button class="calculate-btn" onclick="generateHealthReport()" style="background: linear-gradient(45deg, #27ae60, #2ecc71);">
+                            <i class="fas fa-file-medical"></i> Generate Health Report
+                        </button>
+                    </div>
+                </div>
+
+                <div id="disease-results" style="display: none;">
+                    <div class="results-section">
+                        <h3><i class="fas fa-chart-pie"></i> Disease Risk Analysis</h3>
+                        
+                        <div class="result-card" style="margin-bottom: 25px;">
+                            <h4><i class="fas fa-thermometer-three-quarters"></i> Overall Health Risk</h4>
+                            <div class="result-value" id="overall-risk-value">-</div>
+                            <div class="result-status" id="overall-risk-status">-</div>
+                        </div>
+
+                        <div class="results-grid" id="disease-predictions-grid">
+                            <!-- Disease predictions will be populated here -->
+                        </div>
+                        
+                        <div style="margin-top: 30px;" id="health-recommendations">
+                            <h4><i class="fas fa-stethoscope"></i> Health Recommendations</h4>
+                            <div id="recommendations-content">
+                                <!-- Recommendations will be populated here -->
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 30px;" id="critical-metals-section">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Critical Metal Exposure</h4>
+                            <div id="critical-metals-content">
+                                <!-- Critical metals will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> About Disease Prediction</h3>
+                    <div style="background: white; padding: 20px; border-radius: 10px;">
+                        <p><strong>Our AI Model analyzes:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Heavy metal concentration patterns</li>
+                            <li>Synergistic effects of multiple metals</li>
+                            <li>Dose-response relationships from medical literature</li>
+                            <li>Population-based risk factors</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Predicted Diseases Include:</strong></p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Neurological Disorders</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Kidney Disease</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Cardiovascular Disease</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Respiratory Issues</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">GI Problems</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Skin Disorders</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Cancer Risk</span>
+                            <span style="background: #ecf0f1; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem;">Bone Disease</span>
+                        </div>
+                        <div class="alert alert-info" style="margin-top: 15px;">
+                            <strong>Disclaimer:</strong> This tool provides risk assessment based on exposure data and should not replace professional medical consultation. Always consult healthcare providers for accurate diagnosis and treatment.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Mapping Tab -->
             <div id="mapping" class="tab-content">
                 <h2>Interactive Pollution Map</h2>
@@ -304,14 +389,16 @@
     <!-- External Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     
     <!-- Local Scripts -->
     <script src="SRC/js/utils.js"></script>
     <script src="SRC/js/calculations.js"></script>
+    <script src="SRC/js/ml-model.js"></script>
     <script src="SRC/js/map.js"></script>
     <script src="SRC/js/charts.js"></script>
     <script src="SRC/js/chatbot.js"></script>
     <script src="SRC/js/main.js"></script>
 </body>
-
 </html>
+
