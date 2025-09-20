@@ -80,6 +80,7 @@ hmpi-monitor/
 │       ├── map.js           # Map and location functionality
 │       ├── chatbot.js       # AI assistant functionality
 │       └── utils.js         # Utility functions
+|       |_ml-model.js        # to predict disease  
 ├── data/
 │   └── templates/
 │       └── sample_data.csv  # Sample data template
