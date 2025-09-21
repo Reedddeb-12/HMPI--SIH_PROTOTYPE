@@ -397,7 +397,7 @@
     }
 }
 
-/* Dark mode support */
+/* Dark mode support - Updated for better text visibility */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-primary: #1a1a1a;
@@ -418,11 +418,18 @@
         background: #374151;
     }
     
+    /* Keep input fields light for better visibility */
     .form-group input,
     .form-group select {
-        background: #4a5568;
-        color: var(--text-primary);
+        background: white !important;
+        color: #2c3e50 !important;
         border-color: #6b7280;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        background: white !important;
+        color: #2c3e50 !important;
     }
     
     .data-table {
@@ -1219,6 +1226,7 @@ nav {
     transition: all 0.3s ease;
     background: white;
     font-family: inherit;
+    color: #2c3e50;
 }
 
 .form-group input:focus, 
@@ -1227,11 +1235,39 @@ nav {
     border-color: #667eea;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     transform: translateY(-2px);
+    background: white;
+    color: #2c3e50;
 }
 
 .form-group input::placeholder {
-    color: #adb5bd;
+    color: #6c757d;
     font-style: italic;
+    opacity: 1;
+}
+
+/* Ensure text is always visible */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select {
+    color: #2c3e50 !important;
+    background: white !important;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed;
+}
+
+/* Fix for webkit autofill */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #2c3e50 !important;
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    background-color: white !important;
 }
 
 /* Upload Area */
@@ -1484,6 +1520,9 @@ nav {
         font-size: 1rem;
     }
 }
+    
+ 
+
 
 
 
