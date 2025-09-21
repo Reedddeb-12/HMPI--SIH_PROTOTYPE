@@ -417,6 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     initializeCharts();
     initializeMLModel();
+    initializeAnimations();
     
     // Set today's date
     document.getElementById('sample-date').valueAsDate = new Date();
@@ -447,6 +448,311 @@ function initializeMLModel() {
             predictButton.disabled = false;
         }
     }, 3000);
+}
+
+// Initialize animations and UI enhancements
+function initializeAnimations() {
+    // Add background shapes
+    addBackgroundShapes();
+    
+    // Initialize counter animations for hero stats
+    animateCounters();
+    
+    // Add smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+// Add animated background shapes
+function addBackgroundShapes() {
+    const bgShapes = document.createElement('div');
+    bgShapes.className = 'bg-shapes';
+    
+    for (let i = 0; i < 3; i++) {
+        const shape = document.createElement('div');
+        shape.className = 'bg-shape';
+        bgShapes.appendChild(shape);
+    }
+    
+    document.body.appendChild(bgShapes);
+}
+
+// Animate counters in hero section
+function animateCounters() {
+    const counters = document.querySelectorAll('.stat-number');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000; // 2 seconds
+        const start = Date.now();
+        
+        function updateCounter() {
+            const elapsed = Date.now() - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const current = Math.floor(progress * target);
+            
+            counter.textContent = current;
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target;
+            }
+        }
+        
+        // Start animation when hero section is visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => updateCounter(), 1000);
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        
+        observer.observe(counter);
+    });
+}
+
+// Load demo data function
+function loadDemoData() {
+    const demoData = [
+        {
+            location: 'Mumbai Industrial Zone',
+            latitude: 19.0760,
+            longitude: 72.8777,
+            date: '2024-01-15',
+            metals: {
+                lead: 0.015,
+                mercury: 0.008,
+                cadmium: 0.004,
+                arsenic: 0.018,
+                chromium: 0.045,
+                copper: 0.25,
+                zinc: 1.2,
+                nickel: 0.08
+            }
+        },
+        {
+            location: 'Bangalore Tech Park',
+            latitude: 12.9716,
+            longitude: 77.5946,
+            date: '2024-01-16',
+            metals: {
+                lead: 0.008,
+                mercury: 0.003,
+                cadmium: 0.002,
+                arsenic: 0.012,
+                chromium: 0.025,
+                copper: 0.15,
+                zinc: 0.8,
+                nickel: 0.04
+            }
+        },
+        {
+            location: 'Delhi NCR Sample',
+            latitude: 28.7041,
+            longitude: 77.1025,
+            date: '2024-01-17',
+            metals: {
+                lead: 0.022,
+                mercury: 0.012,
+                cadmium: 0.006,
+                arsenic: 0.025,
+                chromium: 0.065,
+                copper: 0.35,
+                zinc: 1.8,
+                nickel: 0.12
+            }
+        }
+    ];
+    
+    // Add demo data to global array
+    demoData.forEach(data => {
+        data.indices = {
+            hpi: calculateHPI(data.metals),
+            hei: calculateHEI(data.metals),
+            cd: calculateContaminationDegree(data.metals)
+        };
+        waterQualityData.push(data);
+    });
+    
+    // Update UI elements
+    updateMapMarkers();
+    updateLeaderboards();
+    updateLocationTable();
+    
+    // Show success notification with animation
+    showNotification('Demo data loaded successfully! 3 sample locations added.', 'success');
+    
+    // Animate to mapping tab
+    setTimeout(() => {
+        showTab('mapping');
+    }, 1000);
+}
+
+// Enhanced file upload with progress
+function processFileWithProgress(file) {
+    const progressBar = document.querySelector('.upload-progress');
+    const progressFill = document.querySelector('.upload-progress-bar');
+    
+    if (progressBar) {
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        if (progressBar) {
+            progressFill.style.width = '100%';
+        }
+        
+        setTimeout(() => {
+            try {
+                if (file.name.endsWith('.csv')) {
+                    parseCSV(e.target.result);
+                } else {
+                    showNotification('Please upload a CSV file', 'error');
+                }
+                
+                if (progressBar) {
+                    progressBar.style.display = 'none';
+                }
+            } catch (error) {
+                showNotification('Error processing file: ' + error.message, 'error');
+                if (progressBar) {
+                    progressBar.style.display = 'none';
+                }
+            }
+        }, 500);
+    };
+    
+    reader.onprogress = function(e) {
+        if (e.lengthComputable && progressBar) {
+            const progress = (e.loaded / e.total) * 100;
+            progressFill.style.width = progress + '%';
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+// Add visual feedback to form inputs
+function addInputEnhancements() {
+    const inputs = document.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        // Add floating label effect
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Add validation styling
+        input.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('error');
+                this.classList.add('valid');
+            } else {
+                this.classList.remove('valid');
+                this.classList.add('error');
+            }
+        });
+    });
+}
+
+// Enhanced notification system with better animations
+function showEnhancedNotification(message, type = 'info', duration = 5000) {
+    // Remove existing notifications
+    document.querySelectorAll('.notification').forEach(notification => {
+        notification.remove();
+    });
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-triangle',
+        info: 'info-circle',
+        warning: 'exclamation-circle'
+    };
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${icons[type] || 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="notification-close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        z-index: 10000;
+        transform: translateX(400px);
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        max-width: 350px;
+    `;
+    
+    // Type-specific styling
+    const typeColors = {
+        success: 'linear-gradient(45deg, #2ecc71, #27ae60)',
+        error: 'linear-gradient(45deg, #e74c3c, #c0392b)',
+        info: 'linear-gradient(45deg, #667eea, #764ba2)',
+        warning: 'linear-gradient(45deg, #f39c12, #e67e22)'
+    };
+    
+    notification.style.background = typeColors[type] || typeColors.info;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Auto remove
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, duration);
+}
+
+// Override the original showNotification function
+function showNotification(message, type = 'info', duration = 5000) {
+    showEnhancedNotification(message, type, duration);
 }
 
 // Tab management
@@ -897,4 +1203,7 @@ function generateReport() {
 }
 
 console.log('HMPI Application main.js loaded successfully!');
+
+ 
+
 
