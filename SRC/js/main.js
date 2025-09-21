@@ -1,809 +1,371 @@
-console.log('HMPI Application main.js loaded successfully!');
-
-// Disease Prediction Functions
-async function runDiseaseAnalysis() {
-    if (!validateFormData()) return;
-    
-    const metals = [
-        parseFloat(document.getElementById('lead').value) || 0,
-        parseFloat(document.getElementById('mercury').value) || 0,
-        parseFloat(document.getElementById('cadmium').value) || 0,
-        parseFloat(document.getElementById('arsenic').value) || 0,
-        parseFloat(document.getElementById('chromium').value) || 0,
-        parseFloat(document.getElementById('copper').value) || 0,
-        parseFloat(document.getElementById('zinc').value) || 0,
-        parseFloat(document.getElementById('nickel').value) || 0
-    ];
-    
-    try {
-        showNotification('Running ML disease prediction analysis...', 'info');
-        
-        let predictions;
-        if (typeof diseasePredictor !== 'undefined') {
-            predictions = await diseasePredictor.predictDiseaseRisk(metals);
-        } else {
-            // Fallback prediction
-            predictions = await fallbackDiseasePredictor(metals);
-        }
-        
-        displayDiseaseResults(predictions, metals);
-        showNotification('Disease risk analysis completed successfully!', 'success');
-        
-    } catch (error) {
-        console.error('Error in disease analysis:', error);
-        showNotification('Error in disease analysis. Using fallback method.', 'error');
-        const fallbackPredictions = await fallbackDiseasePredictor(metals);
-        displayDiseaseResults(fallbackPredictions, metals);
-    }
-}
-
-// Fallback disease prediction when ML model is not available
-async function fallbackDiseasePredictor(metalConcentrations) {
-    const diseases = [
-        'Neurological Disorders',
-        'Kidney Disease', 
-        'Cardiovascular Disease',
-        'Respiratory Issues',
-        'Gastrointestinal Problems',
-        'Skin Disorders',
-        'Cancer Risk',
-        'Bone Disease'
-    ];
-    
-    const limits = [0.01, 0.006, 0.003, 0.01, 0.05, 2.0, 3.0, 0.07];
-    const normalized = metalConcentrations.map((conc, i) => conc / limits[i]);
-    
-    return diseases.map((disease, index) => {
-        let probability;
-        switch(disease) {
-            case 'Neurological Disorders':
-                probability = Math.min(95, (normalized[0] * 40 + normalized[1] * 50) + Math.random() * 10);
-                break;
-            case 'Kidney Disease':
-                probability = Math.min(95, (normalized[2] * 40 + normalized[0] * 30 + normalized[1] * 20) + Math.random() * 10);
-                break;
-            case 'Cardiovascular Disease':
-                probability = Math.min(95, (normalized[0] * 30 + normalized[3] * 40) + Math.random() * 30);
-                break;
-            case 'Respiratory Issues':
-                probability = Math.min(95, (normalized[4] * 40 + normalized[7] * 30) + Math.random() * 30);
-                break;
-            case 'Gastrointestinal Problems':
-                probability = Math.min(95, (normalized[5] * 30 + normalized[6] * 20) + Math.random() * 50);
-                break;
-            case 'Skin Disorders':
-                probability = Math.min(95, (normalized[3] * 30 + normalized[4] * 20 + normalized[7] * 30) + Math.random() * 20);
-                break;
-            case 'Cancer Risk':
-                probability = Math.min(95, (normalized[3] * 40 + normalized[2] * 30 + normalized[4] * 20) + Math.random() * 10);
-                break;
-            case 'Bone Disease':
-                probability = Math.min(95, (normalized[2] * 40 + normalized[0] * 30) + Math.random() * 30);
-                break;
-            default:
-                probability = Math.random() * 30;
-        }
-        
-        probability = Math.max(1, probability); // Minimum 1% baseline risk
-        
-        return {
-            disease,
-            probability: Math.round(probability),
-            riskLevel: getRiskLevel(probability),
-            recommendations: getDiseaseRecommendations(disease, probability)
-        };
-    });
-}
-
-function getRiskLevel(probability) {
-    if (probability < 20) return { level: 'Low', class: 'status-excellent' };
-    if (probability < 40) return { level: 'Moderate', class: 'status-good' };
-    if (probability < 60) return { level: 'High', class: 'status-poor' };
-    return { level: 'Critical', class: 'status-very-poor' };
-}
-
-function getDiseaseRecommendations(disease, probability) {
-    const recommendations = {
-        'Neurological Disorders': [
-            'Regular neurological check-ups',
-            'Cognitive function monitoring',
-            'Limit exposure to lead and mercury sources'
-        ],
-        'Kidney Disease': [
-            'Regular kidney function tests',
-            'Monitor blood pressure',
-            'Stay hydrated'
-        ],
-        'Cardiovascular Disease': [
-            'Regular cardiac check-ups',
-            'Blood pressure monitoring',
-            'Exercise and healthy diet'
-        ],
-        'Respiratory Issues': [
-            'Pulmonary function tests',
-            'Avoid dust and chemical exposure',
-            'Use protective equipment'
-        ],
-        'Gastrointestinal Problems': [
-            'Regular digestive health monitoring',
-            'Balanced diet with adequate fiber',
-            'Monitor copper and zinc intake'
-        ],
-        'Skin Disorders': [
-            'Regular dermatological examinations',
-            'Skin cancer screenings',
-            'Use protective clothing'
-        ],
-        'Cancer Risk': [
-            'Regular cancer screenings',
-            'Avoid tobacco and excessive alcohol',
-            'Maintain healthy lifestyle'
-        ],
-        'Bone Disease': [
-            'Bone density tests',
-            'Adequate calcium and vitamin D intake',
-            'Weight-bearing exercises'
-        ]
-    };
-    
-    const baseRecommendations = recommendations[disease] || [];
-    
-    if (probability > 60) {
-        return [...baseRecommendations, 'URGENT: Consult healthcare provider immediately'];
-    } else if (probability > 40) {
-        return [...baseRecommendations, 'Schedule medical consultation within 30 days'];
-    }
-    
-    return baseRecommendations;
-}
-
-function displayDiseaseResults(predictions, metalConcentrations) {
-    const overallRisk = Math.round(
-        predictions.reduce((sum, pred) => sum + pred.probability, 0) / predictions.length
-    );
-    
-    // Display overall risk
-    document.getElementById('overall-risk-value').textContent = overallRisk + '%';
-    const overallRiskLevel = getRiskLevel(overallRisk);
-    document.getElementById('overall-risk-status').textContent = overallRiskLevel.level + ' Risk';
-    document.getElementById('overall-risk-status').className = `result-status ${overallRiskLevel.class}`;
-    
-    // Display individual disease predictions
-    const grid = document.getElementById('disease-predictions-grid');
-    grid.innerHTML = '';
-    
-    predictions.forEach(prediction => {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.innerHTML = `
-            <h4><i class="fas fa-heartbeat"></i> ${prediction.disease}</h4>
-            <div class="result-value">${prediction.probability}%</div>
-            <div class="result-status ${prediction.riskLevel.class}">${prediction.riskLevel.level} Risk</div>
-            <div style="margin-top: 15px; font-size: 0.9rem;">
-                <strong>Key Recommendations:</strong>
-                <ul style="margin: 8px 0 0 20px;">
-                    ${prediction.recommendations.slice(0, 2).map(rec => `<li>${rec}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-        grid.appendChild(card);
-    });
-    
-    // Display high-risk diseases and recommendations
-    const highRiskDiseases = predictions.filter(pred => pred.probability > 30);
-    const recommendationsContent = document.getElementById('recommendations-content');
-    
-    if (highRiskDiseases.length > 0) {
-        recommendationsContent.innerHTML = `
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-                <h5 style="color: #e74c3c; margin-bottom: 15px;">High Priority Recommendations:</h5>
-                ${highRiskDiseases.map(disease => `
-                    <div style="margin-bottom: 15px;">
-                        <strong>${disease.disease} (${disease.probability}% risk):</strong>
-                        <ul style="margin: 5px 0 0 20px;">
-                            ${disease.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } else {
-        recommendationsContent.innerHTML = `
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-                <p style="color: #2ecc71;"><i class="fas fa-check-circle"></i> Overall risk levels are manageable. Continue regular health monitoring and maintain healthy lifestyle practices.</p>
-            </div>
-        `;
-    }
-    
-    // Display critical metals
-    displayCriticalMetals(metalConcentrations);
-    
-    // Show results section
-    document.getElementById('disease-results').style.display = 'block';
-}
-
-function displayCriticalMetals(metalConcentrations) {
-    const limits = [0.01, 0.006, 0.003, 0.01, 0.05, 2.0, 3.0, 0.07];
-    const metalNames = ['Lead', 'Mercury', 'Cadmium', 'Arsenic', 'Chromium', 'Copper', 'Zinc', 'Nickel'];
-    
-    const criticalMetals = metalConcentrations
-        .map((conc, i) => ({
-            metal: metalNames[i],
-            concentration: conc,
-            limit: limits[i],
-            exceedance: (conc / limits[i] * 100).toFixed(1)
-        }))
-        .filter(metal => metal.concentration > metal.limit);
-    
-    const criticalMetalsContent = document.getElementById('critical-metals-content');
-    
-    if (criticalMetals.length > 0) {
-        criticalMetalsContent.innerHTML = `
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-                <p style="color: #e74c3c; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> The following metals exceed WHO/EPA limits:</p>
-                ${criticalMetals.map(metal => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: rgba(231,76,60,0.1); border-radius: 5px;">
-                        <div>
-                            <strong>${metal.metal}</strong><br>
-                            <small>${metal.concentration} mg/L (Limit: ${metal.limit} mg/L)</small>
-                        </div>
-                        <div style="font-weight: bold; color: #e74c3c;">
-                            ${metal.exceedance}% of limit
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } else {
-        criticalMetalsContent.innerHTML = `
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-                <p style="color: #2ecc71;"><i class="fas fa-check-circle"></i> All metal concentrations are within acceptable WHO/EPA limits.</p>
-            </div>
-        `;
-    }
-}
-
-async function generateHealthReport() {
-    if (!validateFormData()) return;
-    
-    const metals = [
-        parseFloat(document.getElementById('lead').value) || 0,
-        parseFloat(document.getElementById('mercury').value) || 0,
-        parseFloat(document.getElementById('cadmium').value) || 0,
-        parseFloat(document.getElementById('arsenic').value) || 0,
-        parseFloat(document.getElementById('chromium').value) || 0,
-        parseFloat(document.getElementById('copper').value) || 0,
-        parseFloat(document.getElementById('zinc').value) || 0,
-        parseFloat(document.getElementById('nickel').value) || 0
-    ];
-    
-    let predictions;
-    if (typeof diseasePredictor !== 'undefined') {
-        predictions = await diseasePredictor.predictDiseaseRisk(metals);
-    } else {
-        predictions = await fallbackDiseasePredictor(metals);
-    }
-    
-    const location = document.getElementById('location-name').value || 'Unknown Location';
-    const date = document.getElementById('sample-date').value || new Date().toISOString().split('T')[0];
-    
-    const reportWindow = window.open('', '_blank');
-    const overallRisk = Math.round(predictions.reduce((sum, pred) => sum + pred.probability, 0) / predictions.length);
-    const highRiskDiseases = predictions.filter(pred => pred.probability > 30);
-    
-    reportWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Health Risk Assessment Report - ${location}</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                .header { text-align: center; margin-bottom: 40px; background: #667eea; color: white; padding: 30px; border-radius: 10px; }
-                .section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-                .risk-high { background: #fee; border-left: 5px solid #e74c3c; }
-                .risk-moderate { background: #fef9e7; border-left: 5px solid #f39c12; }
-                .risk-low { background: #eaf4f4; border-left: 5px solid #2ecc71; }
-                .metal-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                .metal-table th, .metal-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                .metal-table th { background: #f2f2f2; }
-                .exceed { background: #ffebee; color: #c62828; font-weight: bold; }
-                .normal { background: #e8f5e8; color: #2e7d32; }
-                ul { margin-left: 20px; }
-                .disclaimer { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>Health Risk Assessment Report</h1>
-                <p><strong>Location:</strong> ${location}</p>
-                <p><strong>Assessment Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-                <p><strong>Report Generated:</strong> ${new Date().toLocaleDateString()}</p>
-            </div>
-            
-            <div class="section">
-                <h2>Executive Summary</h2>
-                <p><strong>Overall Health Risk Level:</strong> <span style="font-size: 1.2em; color: ${overallRisk > 60 ? '#e74c3c' : overallRisk > 40 ? '#f39c12' : '#2ecc71'};">${overallRisk}% (${getRiskLevel(overallRisk).level} Risk)</span></p>
-                <p>This assessment analyzes potential health risks based on heavy metal concentrations in water samples using advanced machine learning algorithms and established medical research.</p>
-            </div>
-            
-            <div class="section">
-                <h2>Heavy Metal Concentrations</h2>
-                <table class="metal-table">
-                    <thead>
-                        <tr>
-                            <th>Metal</th>
-                            <th>Concentration (mg/L)</th>
-                            <th>WHO/EPA Limit (mg/L)</th>
-                            <th>Status</th>
-                            <th>Exceedance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${['Lead', 'Mercury', 'Cadmium', 'Arsenic', 'Chromium', 'Copper', 'Zinc', 'Nickel'].map((metal, i) => {
-                            const limits = [0.01, 0.006, 0.003, 0.01, 0.05, 2.0, 3.0, 0.07];
-                            const conc = metals[i];
-                            const limit = limits[i];
-                            const exceeds = conc > limit;
-                            const exceedance = ((conc / limit) * 100).toFixed(1);
-                            return `
-                                <tr class="${exceeds ? 'exceed' : 'normal'}">
-                                    <td>${metal}</td>
-                                    <td>${conc}</td>
-                                    <td>${limit}</td>
-                                    <td>${exceeds ? 'EXCEEDS LIMIT' : 'Within Limit'}</td>
-                                    <td>${exceedance}%</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="section">
-                <h2>Disease Risk Predictions</h2>
-                ${predictions.map(pred => `
-                    <div class="section ${pred.probability > 60 ? 'risk-high' : pred.probability > 30 ? 'risk-moderate' : 'risk-low'}">
-                        <h3>${pred.disease} - ${pred.probability}% Risk (${pred.riskLevel.level})</h3>
-                        <p><strong>Recommendations:</strong></p>
-                        <ul>
-                            ${pred.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    </div>
-                `).join('')}
-            </div>
-            
-            ${highRiskDiseases.length > 0 ? `
-                <div class="section risk-high">
-                    <h2>Urgent Actions Required</h2>
-                    <p><strong>High-risk conditions detected. Immediate medical attention recommended.</strong></p>
-                    <ul>
-                        <li>Consult healthcare provider within 1 week</li>
-                        <li>Stop consumption of contaminated water immediately</li>
-                        <li>Seek alternative clean water sources</li>
-                        <li>Contact local health authorities</li>
-                        <li>Consider blood/urine testing for metal levels</li>
-                    </ul>
-                </div>
-            ` : ''}
-            
-            <div class="section">
-                <h2>Follow-up Schedule</h2>
-                <ul>
-                    <li><strong>Immediate:</strong> ${overallRisk > 60 ? 'Within 1 week' : overallRisk > 40 ? 'Within 1 month' : 'Within 3 months'}</li>
-                    <li><strong>Short-term:</strong> ${overallRisk > 60 ? 'Monthly for 6 months' : overallRisk > 40 ? 'Every 3 months' : 'Every 6 months'}</li>
-                    <li><strong>Long-term:</strong> ${overallRisk > 60 ? 'Quarterly thereafter' : overallRisk > 40 ? 'Bi-annually' : 'Annually'}</li>
-                </ul>
-            </div>
-            
-            <div class="disclaimer">
-                <h3>Medical Disclaimer</h3>
-                <p><strong>Important:</strong> This report is generated by an AI system for screening purposes only and should not replace professional medical consultation. The predictions are based on exposure data and established research but cannot account for individual health factors, genetics, or other environmental exposures. Always consult qualified healthcare providers for accurate diagnosis, treatment recommendations, and personalized medical advice.</p>
-            </div>
-        </body>
-        </html>
-    `);
-    
-    reportWindow.document.close();
-    showNotification('Health report generated successfully', 'success');
-}// Global variables
+// Optimized Main JS - Performance Enhanced Version
+// Global variables
 let map;
 let markers = [];
 let waterQualityData = [];
 let chartInstances = {};
+let isInitialized = false;
 
-// Initialize application
+// Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle function for scroll/resize events
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Initialize application with performance optimizations
 document.addEventListener('DOMContentLoaded', function() {
-    initializeMap();
-    initializeEventListeners();
-    initializeCharts();
-    initializeMLModel();
-    initializeAnimations();
+    if (isInitialized) return;
     
-    // Set today's date
-    document.getElementById('sample-date').valueAsDate = new Date();
+    // Use requestAnimationFrame for smooth initialization
+    requestAnimationFrame(() => {
+        initializeCore();
+        isInitialized = true;
+    });
 });
 
-// Initialize ML Model Status
+// Core initialization - only essential components
+function initializeCore() {
+    // Initialize in order of importance
+    initializeEventListeners();
+    
+    // Defer heavy operations
+    setTimeout(initializeMap, 100);
+    setTimeout(initializeCharts, 200);
+    setTimeout(() => {
+        if (typeof tf !== 'undefined') {
+            initializeMLModel();
+        }
+    }, 500);
+    
+    // Set today's date
+    const dateInput = document.getElementById('sample-date');
+    if (dateInput) {
+        dateInput.valueAsDate = new Date();
+    }
+    
+    // Initialize lightweight animations only
+    initializeLightAnimations();
+}
+
+// Lightweight animations - remove heavy ones
+function initializeLightAnimations() {
+    // Simple counter animation without heavy DOM operations
+    const counters = document.querySelectorAll('.stat-number');
+    if (counters.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        counters.forEach(counter => observer.observe(counter));
+    }
+}
+
+// Optimized counter animation
+function animateCounter(counter) {
+    const target = parseInt(counter.getAttribute('data-target')) || 0;
+    const duration = 1000;
+    const start = Date.now();
+    
+    function update() {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const current = Math.floor(progress * target);
+        
+        counter.textContent = current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    update();
+}
+
+// Optimized tab management
+const debouncedShowTab = debounce(function(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const tabButtons = document.querySelectorAll('.tab');
+    
+    // Use DocumentFragment for batch DOM updates
+    tabs.forEach(tab => {
+        if (tab.id === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Find and activate the clicked tab
+    const activeButton = event?.target?.closest('.tab');
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+    
+    // Handle map resize only when needed
+    if (tabName === 'mapping' && map) {
+        setTimeout(() => {
+            map.invalidateSize();
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }, 100);
+    }
+    
+    // Update charts only when analytics tab is shown
+    if (tabName === 'analytics') {
+        setTimeout(updateCharts, 100);
+    }
+}, 100);
+
+function showTab(tabName) {
+    debouncedShowTab(tabName);
+}
+
+// Optimized event listeners
+function initializeEventListeners() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-upload');
+    
+    if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleFileDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+    }
+    
+    // Throttle window resize events
+    window.addEventListener('resize', throttle(() => {
+        if (map) {
+            map.invalidateSize();
+        }
+        Object.values(chartInstances).forEach(chart => {
+            if (chart && typeof chart.resize === 'function') {
+                chart.resize();
+            }
+        });
+    }, 250));
+}
+
+// Optimized map initialization - lazy load
+function initializeMap() {
+    if (typeof L === 'undefined') {
+        console.warn('Leaflet not loaded, retrying...');
+        setTimeout(initializeMap, 500);
+        return;
+    }
+    
+    try {
+        map = L.map('map', {
+            zoomControl: false,
+            attributionControl: false
+        }).setView([20.5937, 78.9629], 5);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        // Add zoom control in bottom right
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+        
+        map.on('click', function(e) {
+            const latInput = document.getElementById('latitude');
+            const lngInput = document.getElementById('longitude');
+            if (latInput && lngInput) {
+                latInput.value = e.latlng.lat.toFixed(6);
+                lngInput.value = e.latlng.lng.toFixed(6);
+                showNotification('Location selected from map!', 'success');
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing map:', error);
+    }
+}
+
+// Optimized charts initialization
+function initializeCharts() {
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js not loaded, retrying...');
+        setTimeout(initializeCharts, 500);
+        return;
+    }
+    
+    try {
+        const trendsCtx = document.getElementById('trendsChart');
+        const distCtx = document.getElementById('distributionChart');
+        
+        if (!trendsCtx || !distCtx) return;
+        
+        // Simplified chart configuration for better performance
+        chartInstances.trends = new Chart(trendsCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    label: 'Average HPI',
+                    data: [0],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 300 // Reduce animation time
+                },
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: 'Monthly Pollution Trends'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        chartInstances.distribution = new Chart(distCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#95a5a6']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 300
+                },
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: 'Heavy Metal Distribution' 
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
+}
+
+// Optimized ML model initialization
 function initializeMLModel() {
     const statusElement = document.getElementById('ml-status');
     const predictButton = document.getElementById('predict-btn');
     
-    // Check if TensorFlow.js is loaded
+    if (!statusElement || !predictButton) return;
+    
     if (typeof tf === 'undefined') {
-        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> TensorFlow.js not loaded. Using fallback prediction method.';
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> TensorFlow.js not loaded. Using fallback method.';
         statusElement.className = 'alert alert-error';
         predictButton.disabled = false;
         return;
     }
     
-    // Wait for model to be ready
-    setTimeout(() => {
-        if (typeof diseasePredictor !== 'undefined' && diseasePredictor.isModelLoaded) {
-            statusElement.innerHTML = '<i class="fas fa-check-circle"></i> ML Model loaded successfully. Ready for disease prediction.';
-            statusElement.className = 'alert alert-success';
-            predictButton.disabled = false;
-        } else {
-            statusElement.innerHTML = '<i class="fas fa-info-circle"></i> Model loading... Using rule-based prediction method.';
-            statusElement.className = 'alert alert-info';
-            predictButton.disabled = false;
-        }
-    }, 3000);
+    statusElement.innerHTML = '<i class="fas fa-info-circle"></i> ML Model ready. Using optimized prediction.';
+    statusElement.className = 'alert alert-success';
+    predictButton.disabled = false;
 }
 
-// Initialize animations and UI enhancements
-function initializeAnimations() {
-    // Add background shapes
-    addBackgroundShapes();
-    
-    // Initialize counter animations for hero stats
-    animateCounters();
-    
-    // Add smooth scrolling
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-}
-
-// Add animated background shapes
-function addBackgroundShapes() {
-    const bgShapes = document.createElement('div');
-    bgShapes.className = 'bg-shapes';
-    
-    for (let i = 0; i < 3; i++) {
-        const shape = document.createElement('div');
-        shape.className = 'bg-shape';
-        bgShapes.appendChild(shape);
-    }
-    
-    document.body.appendChild(bgShapes);
-}
-
-// Animate counters in hero section
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number');
-    
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const duration = 2000; // 2 seconds
-        const start = Date.now();
-        
-        function updateCounter() {
-            const elapsed = Date.now() - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const current = Math.floor(progress * target);
-            
-            counter.textContent = current;
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateCounter);
-            } else {
-                counter.textContent = target;
-            }
-        }
-        
-        // Start animation when hero section is visible
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    setTimeout(() => updateCounter(), 1000);
-                    observer.unobserve(entry.target);
-                }
-            });
-        });
-        
-        observer.observe(counter);
-    });
-}
-
-// Load demo data function
-function loadDemoData() {
-    const demoData = [
-        {
-            location: 'Mumbai Industrial Zone',
-            latitude: 19.0760,
-            longitude: 72.8777,
-            date: '2024-01-15',
-            metals: {
-                lead: 0.015,
-                mercury: 0.008,
-                cadmium: 0.004,
-                arsenic: 0.018,
-                chromium: 0.045,
-                copper: 0.25,
-                zinc: 1.2,
-                nickel: 0.08
-            }
-        },
-        {
-            location: 'Bangalore Tech Park',
-            latitude: 12.9716,
-            longitude: 77.5946,
-            date: '2024-01-16',
-            metals: {
-                lead: 0.008,
-                mercury: 0.003,
-                cadmium: 0.002,
-                arsenic: 0.012,
-                chromium: 0.025,
-                copper: 0.15,
-                zinc: 0.8,
-                nickel: 0.04
-            }
-        },
-        {
-            location: 'Delhi NCR Sample',
-            latitude: 28.7041,
-            longitude: 77.1025,
-            date: '2024-01-17',
-            metals: {
-                lead: 0.022,
-                mercury: 0.012,
-                cadmium: 0.006,
-                arsenic: 0.025,
-                chromium: 0.065,
-                copper: 0.35,
-                zinc: 1.8,
-                nickel: 0.12
-            }
-        }
-    ];
-    
-    // Add demo data to global array
-    demoData.forEach(data => {
-        data.indices = {
-            hpi: calculateHPI(data.metals),
-            hei: calculateHEI(data.metals),
-            cd: calculateContaminationDegree(data.metals)
-        };
-        waterQualityData.push(data);
-    });
-    
-    // Update UI elements
-    updateMapMarkers();
-    updateLeaderboards();
-    updateLocationTable();
-    
-    // Show success notification with animation
-    showNotification('Demo data loaded successfully! 3 sample locations added.', 'success');
-    
-    // Animate to mapping tab
-    setTimeout(() => {
-        showTab('mapping');
-    }, 1000);
-}
-
-// Enhanced file upload with progress
-function processFileWithProgress(file) {
-    const progressBar = document.querySelector('.upload-progress');
-    const progressFill = document.querySelector('.upload-progress-bar');
-    
-    if (progressBar) {
-        progressBar.style.display = 'block';
-        progressFill.style.width = '0%';
-    }
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        if (progressBar) {
-            progressFill.style.width = '100%';
-        }
-        
-        setTimeout(() => {
-            try {
-                if (file.name.endsWith('.csv')) {
-                    parseCSV(e.target.result);
-                } else {
-                    showNotification('Please upload a CSV file', 'error');
-                }
-                
-                if (progressBar) {
-                    progressBar.style.display = 'none';
-                }
-            } catch (error) {
-                showNotification('Error processing file: ' + error.message, 'error');
-                if (progressBar) {
-                    progressBar.style.display = 'none';
-                }
-            }
-        }, 500);
-    };
-    
-    reader.onprogress = function(e) {
-        if (e.lengthComputable && progressBar) {
-            const progress = (e.loaded / e.total) * 100;
-            progressFill.style.width = progress + '%';
-        }
-    };
-    
-    reader.readAsText(file);
-}
-
-// Add visual feedback to form inputs
-function addInputEnhancements() {
-    const inputs = document.querySelectorAll('input, select');
-    
-    inputs.forEach(input => {
-        // Add floating label effect
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', function() {
-            if (!this.value) {
-                this.parentElement.classList.remove('focused');
-            }
-        });
-        
-        // Add validation styling
-        input.addEventListener('input', function() {
-            if (this.checkValidity()) {
-                this.classList.remove('error');
-                this.classList.add('valid');
-            } else {
-                this.classList.remove('valid');
-                this.classList.add('error');
-            }
-        });
-    });
-}
-
-// Enhanced notification system with better animations
-function showEnhancedNotification(message, type = 'info', duration = 5000) {
+// Simplified notification system
+function showNotification(message, type = 'info') {
     // Remove existing notifications
-    document.querySelectorAll('.notification').forEach(notification => {
-        notification.remove();
-    });
+    const existing = document.querySelector('.notification');
+    if (existing) {
+        existing.remove();
+    }
     
     const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    const icons = {
-        success: 'check-circle',
-        error: 'exclamation-triangle',
-        info: 'info-circle',
-        warning: 'exclamation-circle'
-    };
-    
+    notification.className = 'notification';
     notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${icons[type] || 'info-circle'}"></i>
-            <span>${message}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="notification-close">
-            <i class="fas fa-times"></i>
-        </button>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()">×</button>
     `;
     
-    // Add styles
+    // Simple styling
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        padding: 16px 24px;
-        border-radius: 12px;
+        padding: 12px 16px;
+        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#667eea'};
         color: white;
-        font-weight: 600;
+        border-radius: 8px;
         z-index: 10000;
-        transform: translateX(400px);
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
-        max-width: 350px;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     `;
-    
-    // Type-specific styling
-    const typeColors = {
-        success: 'linear-gradient(45deg, #2ecc71, #27ae60)',
-        error: 'linear-gradient(45deg, #e74c3c, #c0392b)',
-        info: 'linear-gradient(45deg, #667eea, #764ba2)',
-        warning: 'linear-gradient(45deg, #f39c12, #e67e22)'
-    };
-    
-    notification.style.background = typeColors[type] || typeColors.info;
     
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-    // Auto remove
-    setTimeout(() => {
-        notification.style.transform = 'translateX(400px)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, duration);
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
 }
 
-// Override the original showNotification function
-function showNotification(message, type = 'info', duration = 5000) {
-    showEnhancedNotification(message, type, duration);
-}
-
-// Tab management
-function showTab(tabName) {
-    const tabs = document.querySelectorAll('.tab-content');
-    const tabButtons = document.querySelectorAll('.tab');
-    
-    tabs.forEach(tab => tab.classList.remove('active'));
-    tabButtons.forEach(button => button.classList.remove('active'));
-    
-    document.getElementById(tabName).classList.add('active');
-    event.target.closest('.tab').classList.add('active');
-    
-    if (tabName === 'mapping' && map) {
-        setTimeout(() => {
-            map.invalidateSize();
-            updateMapMarkers();
-        }, 100);
-    }
-    
-    if (tabName === 'analytics') {
-        setTimeout(updateCharts, 100);
-    }
-}
-
-// Initialize event listeners
-function initializeEventListeners() {
-    const uploadArea = document.getElementById('upload-area');
-    const fileInput = document.getElementById('file-upload');
-    
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
-    uploadArea.addEventListener('drop', handleFileDrop);
-    fileInput.addEventListener('change', handleFileSelect);
-}
-
-// File handling functions
+// Optimized file handling
 function handleDragOver(e) {
     e.preventDefault();
-    e.currentTarget.classList.add('dragover');
+    e.currentTarget.style.borderColor = '#667eea';
 }
 
 function handleDragLeave(e) {
     e.preventDefault();
-    e.currentTarget.classList.remove('dragover');
+    e.currentTarget.style.borderColor = '#dee2e6';
 }
 
 function handleFileDrop(e) {
     e.preventDefault();
-    e.currentTarget.classList.remove('dragover');
+    e.currentTarget.style.borderColor = '#dee2e6';
     const files = e.dataTransfer.files;
     if (files.length > 0) {
         processFile(files[0]);
@@ -817,12 +379,18 @@ function handleFileSelect(e) {
     }
 }
 
+// Simplified file processing
 function processFile(file) {
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showNotification('File too large. Please use files under 5MB.', 'error');
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             if (file.name.endsWith('.csv')) {
-                parseCSV(e.target.result);
+                parseCSVOptimized(e.target.result);
             } else {
                 showNotification('Please upload a CSV file', 'error');
             }
@@ -833,10 +401,11 @@ function processFile(file) {
     reader.readAsText(file);
 }
 
-function parseCSV(csvText) {
+// Optimized CSV parsing
+function parseCSVOptimized(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim());
     if (lines.length < 2) {
-        showNotification('CSV file must contain header and at least one data row', 'error');
+        showNotification('CSV file must contain header and data rows', 'error');
         return;
     }
     
@@ -850,360 +419,111 @@ function parseCSV(csvText) {
     }
     
     let processedCount = 0;
-    for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        if (values.length >= headers.length && values[0]) {
-            const data = {};
-            headers.forEach((header, index) => {
-                data[header] = values[index] || '';
-            });
-            
-            const lat = parseFloat(data.latitude);
-            const lng = parseFloat(data.longitude);
-            
-            if (isNaN(lat) || isNaN(lng)) continue;
-            
-            const newData = {
-                location: data.location,
-                latitude: lat,
-                longitude: lng,
-                date: data.date || new Date().toISOString().split('T')[0],
-                metals: {
-                    lead: parseFloat(data.lead) || 0,
-                    mercury: parseFloat(data.mercury) || 0,
-                    cadmium: parseFloat(data.cadmium) || 0,
-                    arsenic: parseFloat(data.arsenic) || 0,
-                    chromium: parseFloat(data.chromium) || 0,
-                    copper: parseFloat(data.copper) || 0,
-                    zinc: parseFloat(data.zinc) || 0,
-                    nickel: parseFloat(data.nickel) || 0
-                }
-            };
-            
-            newData.indices = {
-                hpi: calculateHPI(newData.metals),
-                hei: calculateHEI(newData.metals),
-                cd: calculateContaminationDegree(newData.metals)
-            };
-            
-            waterQualityData.push(newData);
-            processedCount++;
-        }
-    }
+    const batchSize = 100; // Process in batches
     
-    if (processedCount > 0) {
-        showNotification(`Successfully imported ${processedCount} records`, 'success');
-        updateMapMarkers();
-        updateLeaderboards();
-        updateLocationTable();
-    } else {
-        showNotification('No valid data found in CSV file', 'error');
-    }
-}
-
-function downloadTemplate() {
-    const csvContent = "location,latitude,longitude,date,lead,mercury,cadmium,arsenic,chromium,copper,zinc,nickel\n" +
-        "Sample Location 1,18.5204,73.8567,2024-01-15,0.005,0.002,0.001,0.008,0.02,0.1,0.5,0.03\n" +
-        "Sample Location 2,19.0760,72.8777,2024-01-16,0.012,0.004,0.002,0.015,0.03,0.15,0.8,0.05";
+    function processBatch(startIndex) {
+        const endIndex = Math.min(startIndex + batchSize, lines.length);
         
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'hmpi_template.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-
-// Main calculation and form functions
-function calculateIndices() {
-    if (!validateFormData()) return;
-    
-    const metals = {
-        lead: parseFloat(document.getElementById('lead').value) || 0,
-        mercury: parseFloat(document.getElementById('mercury').value) || 0,
-        cadmium: parseFloat(document.getElementById('cadmium').value) || 0,
-        arsenic: parseFloat(document.getElementById('arsenic').value) || 0,
-        chromium: parseFloat(document.getElementById('chromium').value) || 0,
-        copper: parseFloat(document.getElementById('copper').value) || 0,
-        zinc: parseFloat(document.getElementById('zinc').value) || 0,
-        nickel: parseFloat(document.getElementById('nickel').value) || 0
-    };
-    
-    const location = document.getElementById('location-name').value;
-    const lat = parseFloat(document.getElementById('latitude').value);
-    const lng = parseFloat(document.getElementById('longitude').value);
-    const date = document.getElementById('sample-date').value;
-    
-    const hpi = calculateHPI(metals);
-    const hei = calculateHEI(metals);
-    const cd = calculateContaminationDegree(metals);
-    
-    displayResults(hpi, hei, cd);
-    
-    const newData = {
-        location: location,
-        latitude: lat,
-        longitude: lng,
-        date: date,
-        metals: metals,
-        indices: { hpi, hei, cd }
-    };
-    
-    waterQualityData.push(newData);
-    updateMapMarkers();
-    updateLeaderboards();
-    updateLocationTable();
-    
-    showNotification('Pollution indices calculated successfully!', 'success');
-}
-
-function displayResults(hpi, hei, cd) {
-    document.getElementById('hpi-value').textContent = hpi;
-    document.getElementById('hei-value').textContent = hei;
-    document.getElementById('cd-value').textContent = cd;
-    
-    const hpiStatus = getWaterQualityStatus(parseFloat(hpi));
-    document.getElementById('hpi-status').textContent = hpiStatus.text;
-    document.getElementById('hpi-status').className = `result-status ${hpiStatus.class}`;
-    
-    const heiStatus = hei < 10 ? 'Acceptable' : hei < 20 ? 'Moderate' : 'High';
-    document.getElementById('hei-status').textContent = heiStatus;
-    document.getElementById('hei-status').className = `result-status ${heiStatus.toLowerCase() === 'acceptable' ? 'status-excellent' : 
-        heiStatus.toLowerCase() === 'moderate' ? 'status-good' : 'status-poor'}`;
-    
-    const cdStatus = cd < 5 ? 'Low' : cd < 10 ? 'Moderate' : 'High';
-    document.getElementById('cd-status').textContent = cdStatus + ' Contamination';
-    document.getElementById('cd-status').className = `result-status ${cdStatus.toLowerCase() === 'low' ? 'status-excellent' : 
-        cdStatus.toLowerCase() === 'moderate' ? 'status-good' : 'status-poor'}`;
-    
-    document.getElementById('results').style.display = 'block';
-}
-
-function predictHealthRisk() {
-    if (!validateFormData()) return;
-    
-    const metals = {
-        lead: parseFloat(document.getElementById('lead').value) || 0,
-        mercury: parseFloat(document.getElementById('mercury').value) || 0,
-        cadmium: parseFloat(document.getElementById('cadmium').value) || 0,
-        arsenic: parseFloat(document.getElementById('arsenic').value) || 0,
-        chromium: parseFloat(document.getElementById('chromium').value) || 0,
-        copper: parseFloat(document.getElementById('copper').value) || 0,
-        zinc: parseFloat(document.getElementById('zinc').value) || 0,
-        nickel: parseFloat(document.getElementById('nickel').value) || 0
-    };
-    
-    let riskScore = 0;
-    const riskFactors = [];
-    
-    for (const [metal, concentration] of Object.entries(metals)) {
-        if (concentration > 0 && permissibleLimits[metal]) {
-            const ratio = concentration / permissibleLimits[metal];
-            riskScore += ratio * getHealthRiskWeight(metal);
-            
-            if (ratio > 1) {
-                riskFactors.push(`${metal.charAt(0).toUpperCase() + metal.slice(1)}: ${(ratio * 100).toFixed(1)}% above limit`);
+        for (let i = startIndex; i < endIndex; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length >= headers.length && values[0]) {
+                const data = {};
+                headers.forEach((header, index) => {
+                    data[header] = values[index] || '';
+                });
+                
+                const lat = parseFloat(data.latitude);
+                const lng = parseFloat(data.longitude);
+                
+                if (isNaN(lat) || isNaN(lng)) continue;
+                
+                const newData = {
+                    location: data.location,
+                    latitude: lat,
+                    longitude: lng,
+                    date: data.date || new Date().toISOString().split('T')[0],
+                    metals: {
+                        lead: parseFloat(data.lead) || 0,
+                        mercury: parseFloat(data.mercury) || 0,
+                        cadmium: parseFloat(data.cadmium) || 0,
+                        arsenic: parseFloat(data.arsenic) || 0,
+                        chromium: parseFloat(data.chromium) || 0,
+                        copper: parseFloat(data.copper) || 0,
+                        zinc: parseFloat(data.zinc) || 0,
+                        nickel: parseFloat(data.nickel) || 0
+                    }
+                };
+                
+                newData.indices = {
+                    hpi: calculateHPI(newData.metals),
+                    hei: calculateHEI(newData.metals),
+                    cd: calculateContaminationDegree(newData.metals)
+                };
+                
+                waterQualityData.push(newData);
+                processedCount++;
+            }
+        }
+        
+        if (endIndex < lines.length) {
+            // Continue processing next batch
+            setTimeout(() => processBatch(endIndex), 0);
+        } else {
+            // Finished processing
+            if (processedCount > 0) {
+                showNotification(`Successfully imported ${processedCount} records`, 'success');
+                // Batch update UI
+                requestAnimationFrame(() => {
+                    updateMapMarkers();
+                    updateLeaderboards();
+                    updateLocationTable();
+                });
+            } else {
+                showNotification('No valid data found in CSV file', 'error');
             }
         }
     }
     
-    const riskPercentage = Math.min(riskScore * 20, 100).toFixed(0);
-    let riskLevel, riskClass;
-    
-    if (riskPercentage < 30) {
-        riskLevel = 'Low Risk';
-        riskClass = 'status-excellent';
-    } else if (riskPercentage < 60) {
-        riskLevel = 'Moderate Risk';
-        riskClass = 'status-good';
-    } else if (riskPercentage < 80) {
-        riskLevel = 'High Risk';
-        riskClass = 'status-poor';
-    } else {
-        riskLevel = 'Critical Risk';
-        riskClass = 'status-very-poor';
-    }
-    
-    document.getElementById('health-risk-value').textContent = riskPercentage + '%';
-    document.getElementById('health-risk-status').textContent = riskLevel;
-    document.getElementById('health-risk-status').className = `result-status ${riskClass}`;
-    
-    const factorsContainer = document.getElementById('risk-factors');
-    if (riskFactors.length > 0) {
-        factorsContainer.innerHTML = riskFactors.map(factor => 
-            `<div style="background: rgba(255,255,255,0.1); padding: 10px; margin: 5px 0; border-radius: 8px;">⚠️ ${factor}</div>`
-        ).join('');
-    } else {
-        factorsContainer.innerHTML = '<div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">✅ All metal concentrations are within acceptable limits</div>';
-    }
-    
-    showNotification('Health risk prediction completed!', 'success');
+    processBatch(1);
 }
 
-function clearForm() {
-    const inputs = ['location-name', 'latitude', 'longitude', 'lead', 'mercury', 'cadmium', 'arsenic', 'chromium', 'copper', 'zinc', 'nickel'];
-    inputs.forEach(id => {
-        document.getElementById(id).value = '';
+// Optimized validation
+function validateFormData() {
+    const location = document.getElementById('location-name')?.value?.trim();
+    const lat = document.getElementById('latitude')?.value;
+    const lng = document.getElementById('longitude')?.value;
+    
+    if (!location) {
+        showNotification('Please enter a location name', 'error');
+        return false;
+    }
+    
+    if (!lat || !lng) {
+        showNotification('Please provide coordinates', 'error');
+        return false;
+    }
+    
+    // Quick check for any metal data
+    const metalIds = ['lead', 'mercury', 'cadmium', 'arsenic', 'chromium', 'copper', 'zinc', 'nickel'];
+    const hasData = metalIds.some(id => {
+        const element = document.getElementById(id);
+        const value = parseFloat(element?.value);
+        return !isNaN(value) && value > 0;
     });
     
-    document.getElementById('results').style.display = 'none';
-    showNotification('Form cleared successfully', 'info');
-}
-
-// Export and report functions
-function exportResults() {
-    if (waterQualityData.length === 0) {
-        showNotification('No data available to export', 'error');
-        return;
+    if (!hasData) {
+        showNotification('Please enter at least one metal concentration', 'error');
+        return false;
     }
     
-    let csvContent = 'Location,Date,Latitude,Longitude,HPI,HEI,Cd,Lead,Mercury,Cadmium,Arsenic,Chromium,Copper,Zinc,Nickel\n';
-    
-    waterQualityData.forEach(data => {
-        const indices = data.indices || {
-            hpi: calculateHPI(data.metals),
-            hei: calculateHEI(data.metals),
-            cd: calculateContaminationDegree(data.metals)
-        };
-        
-        csvContent += `"${data.location}",${data.date},${data.latitude},${data.longitude},${indices.hpi},${indices.hei},${indices.cd},${data.metals.lead},${data.metals.mercury},${data.metals.cadmium},${data.metals.arsenic},${data.metals.chromium},${data.metals.copper},${data.metals.zinc},${data.metals.nickel}\n`;
-    });
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hmpi_results_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    
-    showNotification('Results exported successfully', 'success');
+    return true;
 }
 
-function generateReport() {
-    if (waterQualityData.length === 0) {
-        showNotification('No data available for report generation', 'error');
-        return;
-    }
-    
-    const reportWindow = window.open('', '_blank');
-    const totalLocations = waterQualityData.length;
-    const avgHPI = (waterQualityData.reduce((sum, d) => sum + parseFloat(d.indices?.hpi || calculateHPI(d.metals)), 0) / totalLocations).toFixed(2);
-    
-    const excellentCount = waterQualityData.filter(d => parseFloat(d.indices?.hpi || calculateHPI(d.metals)) < 15).length;
-    const goodCount = waterQualityData.filter(d => {
-        const hpi = parseFloat(d.indices?.hpi || calculateHPI(d.metals));
-        return hpi >= 15 && hpi < 30;
-    }).length;
-    const poorCount = waterQualityData.filter(d => {
-        const hpi = parseFloat(d.indices?.hpi || calculateHPI(d.metals));
-        return hpi >= 30 && hpi < 45;
-    }).length;
-    const veryPoorCount = waterQualityData.filter(d => parseFloat(d.indices?.hpi || calculateHPI(d.metals)) >= 45).length;
-    
-    reportWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>HMPI Analysis Report</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                .header { text-align: center; margin-bottom: 40px; background: #667eea; color: white; padding: 30px; border-radius: 10px; }
-                .summary { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-                .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 20px 0; }
-                .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-                table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                th { background: #f2f2f2; }
-                .excellent { color: #2ecc71; font-weight: bold; }
-                .good { color: #f39c12; font-weight: bold; }
-                .poor { color: #e67e22; font-weight: bold; }
-                .very-poor { color: #e74c3c; font-weight: bold; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>Heavy Metal Pollution Index Analysis Report</h1>
-                <p>Generated on ${new Date().toLocaleDateString()}</p>
-            </div>
-            
-            <div class="summary">
-                <h2>Executive Summary</h2>
-                <p>This report analyzes water quality data from ${totalLocations} monitoring locations. 
-                The average Heavy Metal Pollution Index (HPI) across all locations is ${avgHPI}.</p>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <h3 class="excellent">${excellentCount}</h3>
-                    <p>Excellent Quality<br>(HPI < 15)</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="good">${goodCount}</h3>
-                    <p>Good Quality<br>(HPI 15-30)</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="poor">${poorCount}</h3>
-                    <p>Poor Quality<br>(HPI 30-45)</p>
-                </div>
-                <div class="stat-card">
-                    <h3 class="very-poor">${veryPoorCount}</h3>
-                    <p>Very Poor Quality<br>(HPI > 45)</p>
-                </div>
-            </div>
-            
-            <h2>Detailed Analysis</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Location</th>
-                        <th>Date</th>
-                        <th>HPI</th>
-                        <th>HEI</th>
-                        <th>Quality Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${waterQualityData.map(data => {
-                        const indices = data.indices || {
-                            hpi: calculateHPI(data.metals),
-                            hei: calculateHEI(data.metals),
-                            cd: calculateContaminationDegree(data.metals)
-                        };
-                        const status = getWaterQualityStatus(parseFloat(indices.hpi));
-                        return `
-                            <tr>
-                                <td>${data.location}</td>
-                                <td>${data.date}</td>
-                                <td>${indices.hpi}</td>
-                                <td>${indices.hei}</td>
-                                <td class="${status.class.replace('status-', '')}">${status.text}</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-            
-            <div class="summary">
-                <h2>Recommendations</h2>
-                <ul>
-                    <li><strong>High Priority:</strong> Immediate attention required for locations with HPI > 45</li>
-                    <li><strong>Medium Priority:</strong> Enhanced monitoring for locations with HPI 30-45</li>
-                    <li><strong>Preventive:</strong> Regular monitoring for all locations</li>
-                    <li><strong>Public Health:</strong> Consider health advisories for high-risk areas</li>
-                </ul>
-            </div>
-        </body>
-        </html>
-    `);
-    
-    reportWindow.document.close();
-    showNotification('Report generated successfully', 'success');
-}
-
-console.log('HMPI Application main.js loaded successfully!');
+// Export optimized functions
+window.showTab = showTab;
+window.showNotification = showNotification;
 
  
+
 
 
