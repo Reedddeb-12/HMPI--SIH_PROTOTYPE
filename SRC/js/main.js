@@ -1,137 +1,76 @@
-// Optimized Main JS - Performance Enhanced Version
+// Simple Main JS - No Animations, Fast Performance
 // Global variables
 let map;
 let markers = [];
 let waterQualityData = [];
 let chartInstances = {};
-let isInitialized = false;
 
-// Debounce function for performance
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Throttle function for scroll/resize events
-function throttle(func, limit) {
-    let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
-        if (!inThrottle) {
-            func.apply(context, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
-
-// Initialize application with performance optimizations
+// Initialize application - simple and fast
 document.addEventListener('DOMContentLoaded', function() {
-    if (isInitialized) return;
-    
-    // Use requestAnimationFrame for smooth initialization
-    requestAnimationFrame(() => {
-        initializeCore();
-        isInitialized = true;
-    });
-});
-
-// Core initialization - only essential components
-function initializeCore() {
-    // Initialize in order of importance
-    initializeEventListeners();
-    
-    // Defer heavy operations
-    setTimeout(initializeMap, 100);
-    setTimeout(initializeCharts, 200);
-    setTimeout(() => {
-        if (typeof tf !== 'undefined') {
-            initializeMLModel();
-        }
-    }, 500);
+    initializeBasicComponents();
     
     // Set today's date
     const dateInput = document.getElementById('sample-date');
     if (dateInput) {
         dateInput.valueAsDate = new Date();
     }
+});
+
+// Initialize only essential components
+function initializeBasicComponents() {
+    initializeEventListeners();
     
-    // Initialize lightweight animations only
-    initializeLightAnimations();
+    // Initialize map after a short delay
+    setTimeout(initializeMap, 100);
+    
+    // Initialize charts after map
+    setTimeout(initializeCharts, 200);
+    
+    // Initialize ML model if available
+    setTimeout(initializeMLModel, 300);
+    
+    // Set static counter values (no animation)
+    setStaticCounters();
 }
 
-// Lightweight animations - remove heavy ones
-function initializeLightAnimations() {
-    // Simple counter animation without heavy DOM operations
+// Set static counter values without animation
+function setStaticCounters() {
     const counters = document.querySelectorAll('.stat-number');
-    if (counters.length > 0) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounter(entry.target);
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
-        
-        counters.forEach(counter => observer.observe(counter));
-    }
-}
-
-// Optimized counter animation
-function animateCounter(counter) {
-    const target = parseInt(counter.getAttribute('data-target')) || 0;
-    const duration = 1000;
-    const start = Date.now();
-    
-    function update() {
-        const elapsed = Date.now() - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const current = Math.floor(progress * target);
-        
-        counter.textContent = current;
-        
-        if (progress < 1) {
-            requestAnimationFrame(update);
+    counters.forEach(counter => {
+        const target = counter.getAttribute('data-target');
+        if (target) {
+            counter.textContent = target;
         }
-    }
-    
-    update();
+    });
 }
 
-// Optimized tab management
-const debouncedShowTab = debounce(function(tabName) {
+// Simple tab switching - no animations
+function showTab(tabName) {
     const tabs = document.querySelectorAll('.tab-content');
     const tabButtons = document.querySelectorAll('.tab');
     
-    // Use DocumentFragment for batch DOM updates
     tabs.forEach(tab => {
-        if (tab.id === tabName) {
-            tab.classList.add('active');
-        } else {
-            tab.classList.remove('active');
-        }
+        tab.classList.remove('active');
     });
     
     tabButtons.forEach(button => {
         button.classList.remove('active');
     });
     
-    // Find and activate the clicked tab
-    const activeButton = event?.target?.closest('.tab');
-    if (activeButton) {
-        activeButton.classList.add('active');
+    const targetTab = document.getElementById(tabName);
+    if (targetTab) {
+        targetTab.classList.add('active');
     }
     
-    // Handle map resize only when needed
+    // Find and activate the clicked tab button
+    if (event && event.target) {
+        const activeButton = event.target.closest('.tab');
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+    
+    // Handle map resize
     if (tabName === 'mapping' && map) {
         setTimeout(() => {
             map.invalidateSize();
@@ -139,20 +78,16 @@ const debouncedShowTab = debounce(function(tabName) {
                 const group = new L.featureGroup(markers);
                 map.fitBounds(group.getBounds().pad(0.1));
             }
-        }, 100);
+        }, 50);
     }
     
-    // Update charts only when analytics tab is shown
+    // Update charts when analytics tab is shown
     if (tabName === 'analytics') {
-        setTimeout(updateCharts, 100);
+        setTimeout(updateCharts, 50);
     }
-}, 100);
-
-function showTab(tabName) {
-    debouncedShowTab(tabName);
 }
 
-// Optimized event listeners
+// Simple event listeners
 function initializeEventListeners() {
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-upload');
@@ -164,42 +99,20 @@ function initializeEventListeners() {
         uploadArea.addEventListener('drop', handleFileDrop);
         fileInput.addEventListener('change', handleFileSelect);
     }
-    
-    // Throttle window resize events
-    window.addEventListener('resize', throttle(() => {
-        if (map) {
-            map.invalidateSize();
-        }
-        Object.values(chartInstances).forEach(chart => {
-            if (chart && typeof chart.resize === 'function') {
-                chart.resize();
-            }
-        });
-    }, 250));
 }
 
-// Optimized map initialization - lazy load
+// Simple map initialization
 function initializeMap() {
     if (typeof L === 'undefined') {
-        console.warn('Leaflet not loaded, retrying...');
-        setTimeout(initializeMap, 500);
+        setTimeout(initializeMap, 200);
         return;
     }
     
     try {
-        map = L.map('map', {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([20.5937, 78.9629], 5);
+        map = L.map('map').setView([20.5937, 78.9629], 5);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
             attribution: '© OpenStreetMap'
-        }).addTo(map);
-        
-        // Add zoom control in bottom right
-        L.control.zoom({
-            position: 'bottomright'
         }).addTo(map);
         
         map.on('click', function(e) {
@@ -216,11 +129,10 @@ function initializeMap() {
     }
 }
 
-// Optimized charts initialization
+// Simple charts initialization
 function initializeCharts() {
     if (typeof Chart === 'undefined') {
-        console.warn('Chart.js not loaded, retrying...');
-        setTimeout(initializeCharts, 500);
+        setTimeout(initializeCharts, 200);
         return;
     }
     
@@ -228,74 +140,54 @@ function initializeCharts() {
         const trendsCtx = document.getElementById('trendsChart');
         const distCtx = document.getElementById('distributionChart');
         
-        if (!trendsCtx || !distCtx) return;
-        
-        // Simplified chart configuration for better performance
-        chartInstances.trends = new Chart(trendsCtx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['No Data'],
-                datasets: [{
-                    label: 'Average HPI',
-                    data: [0],
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4,
-                    pointRadius: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 300 // Reduce animation time
+        if (trendsCtx) {
+            chartInstances.trends = new Chart(trendsCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['No Data'],
+                    datasets: [{
+                        label: 'Average HPI',
+                        data: [0],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
                 },
-                plugins: {
-                    title: { 
-                        display: true, 
-                        text: 'Monthly Pollution Trends'
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
+                options: {
+                    responsive: true,
+                    animation: false, // Disable animations
+                    plugins: {
+                        title: { display: true, text: 'Monthly Pollution Trends' }
                     }
                 }
-            }
-        });
+            });
+        }
         
-        chartInstances.distribution = new Chart(distCtx.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['No Data'],
-                datasets: [{
-                    data: [1],
-                    backgroundColor: ['#95a5a6']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 300
+        if (distCtx) {
+            chartInstances.distribution = new Chart(distCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['No Data'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['#95a5a6']
+                    }]
                 },
-                plugins: {
-                    title: { 
-                        display: true, 
-                        text: 'Heavy Metal Distribution' 
+                options: {
+                    responsive: true,
+                    animation: false, // Disable animations
+                    plugins: {
+                        title: { display: true, text: 'Heavy Metal Distribution' }
                     }
                 }
-            }
-        });
+            });
+        }
     } catch (error) {
         console.error('Error initializing charts:', error);
     }
 }
 
-// Optimized ML model initialization
+// Simple ML model initialization
 function initializeMLModel() {
     const statusElement = document.getElementById('ml-status');
     const predictButton = document.getElementById('predict-btn');
@@ -303,48 +195,50 @@ function initializeMLModel() {
     if (!statusElement || !predictButton) return;
     
     if (typeof tf === 'undefined') {
-        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> TensorFlow.js not loaded. Using fallback method.';
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Using fallback prediction method.';
         statusElement.className = 'alert alert-error';
-        predictButton.disabled = false;
-        return;
+    } else {
+        statusElement.innerHTML = '<i class="fas fa-check-circle"></i> ML Model ready.';
+        statusElement.className = 'alert alert-success';
     }
     
-    statusElement.innerHTML = '<i class="fas fa-info-circle"></i> ML Model ready. Using optimized prediction.';
-    statusElement.className = 'alert alert-success';
     predictButton.disabled = false;
 }
 
-// Simplified notification system
+// Simple notification system
 function showNotification(message, type = 'info') {
     // Remove existing notifications
-    const existing = document.querySelector('.notification');
+    const existing = document.querySelector('.simple-notification');
     if (existing) {
         existing.remove();
     }
     
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = 'simple-notification';
     notification.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()">×</button>
+        ${message}
+        <button onclick="this.parentElement.remove()" style="float: right; background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; margin-left: 10px;">×</button>
     `;
     
     // Simple styling
+    const bgColor = type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#667eea';
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         padding: 12px 16px;
-        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#667eea'};
+        background: ${bgColor};
         color: white;
         border-radius: 8px;
         z-index: 10000;
         font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     `;
     
     document.body.appendChild(notification);
     
+    // Auto remove after 3 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
@@ -352,7 +246,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Optimized file handling
+// File handling functions
 function handleDragOver(e) {
     e.preventDefault();
     e.currentTarget.style.borderColor = '#667eea';
@@ -379,7 +273,7 @@ function handleFileSelect(e) {
     }
 }
 
-// Simplified file processing
+// Simple file processing
 function processFile(file) {
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
         showNotification('File too large. Please use files under 5MB.', 'error');
@@ -390,7 +284,7 @@ function processFile(file) {
     reader.onload = function(e) {
         try {
             if (file.name.endsWith('.csv')) {
-                parseCSVOptimized(e.target.result);
+                parseCSV(e.target.result);
             } else {
                 showNotification('Please upload a CSV file', 'error');
             }
@@ -401,8 +295,8 @@ function processFile(file) {
     reader.readAsText(file);
 }
 
-// Optimized CSV parsing
-function parseCSVOptimized(csvText) {
+// Simple CSV parsing
+function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim());
     if (lines.length < 2) {
         showNotification('CSV file must contain header and data rows', 'error');
@@ -419,75 +313,59 @@ function parseCSVOptimized(csvText) {
     }
     
     let processedCount = 0;
-    const batchSize = 100; // Process in batches
     
-    function processBatch(startIndex) {
-        const endIndex = Math.min(startIndex + batchSize, lines.length);
-        
-        for (let i = startIndex; i < endIndex; i++) {
-            const values = lines[i].split(',').map(v => v.trim());
-            if (values.length >= headers.length && values[0]) {
-                const data = {};
-                headers.forEach((header, index) => {
-                    data[header] = values[index] || '';
-                });
-                
-                const lat = parseFloat(data.latitude);
-                const lng = parseFloat(data.longitude);
-                
-                if (isNaN(lat) || isNaN(lng)) continue;
-                
-                const newData = {
-                    location: data.location,
-                    latitude: lat,
-                    longitude: lng,
-                    date: data.date || new Date().toISOString().split('T')[0],
-                    metals: {
-                        lead: parseFloat(data.lead) || 0,
-                        mercury: parseFloat(data.mercury) || 0,
-                        cadmium: parseFloat(data.cadmium) || 0,
-                        arsenic: parseFloat(data.arsenic) || 0,
-                        chromium: parseFloat(data.chromium) || 0,
-                        copper: parseFloat(data.copper) || 0,
-                        zinc: parseFloat(data.zinc) || 0,
-                        nickel: parseFloat(data.nickel) || 0
-                    }
-                };
-                
-                newData.indices = {
-                    hpi: calculateHPI(newData.metals),
-                    hei: calculateHEI(newData.metals),
-                    cd: calculateContaminationDegree(newData.metals)
-                };
-                
-                waterQualityData.push(newData);
-                processedCount++;
-            }
-        }
-        
-        if (endIndex < lines.length) {
-            // Continue processing next batch
-            setTimeout(() => processBatch(endIndex), 0);
-        } else {
-            // Finished processing
-            if (processedCount > 0) {
-                showNotification(`Successfully imported ${processedCount} records`, 'success');
-                // Batch update UI
-                requestAnimationFrame(() => {
-                    updateMapMarkers();
-                    updateLeaderboards();
-                    updateLocationTable();
-                });
-            } else {
-                showNotification('No valid data found in CSV file', 'error');
-            }
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length >= headers.length && values[0]) {
+            const data = {};
+            headers.forEach((header, index) => {
+                data[header] = values[index] || '';
+            });
+            
+            const lat = parseFloat(data.latitude);
+            const lng = parseFloat(data.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) continue;
+            
+            const newData = {
+                location: data.location,
+                latitude: lat,
+                longitude: lng,
+                date: data.date || new Date().toISOString().split('T')[0],
+                metals: {
+                    lead: parseFloat(data.lead) || 0,
+                    mercury: parseFloat(data.mercury) || 0,
+                    cadmium: parseFloat(data.cadmium) || 0,
+                    arsenic: parseFloat(data.arsenic) || 0,
+                    chromium: parseFloat(data.chromium) || 0,
+                    copper: parseFloat(data.copper) || 0,
+                    zinc: parseFloat(data.zinc) || 0,
+                    nickel: parseFloat(data.nickel) || 0
+                }
+            };
+            
+            newData.indices = {
+                hpi: calculateHPI(newData.metals),
+                hei: calculateHEI(newData.metals),
+                cd: calculateContaminationDegree(newData.metals)
+            };
+            
+            waterQualityData.push(newData);
+            processedCount++;
         }
     }
     
-    processBatch(1);
+    if (processedCount > 0) {
+        showNotification(`Successfully imported ${processedCount} records`, 'success');
+        updateMapMarkers();
+        updateLeaderboards();
+        updateLocationTable();
+    } else {
+        showNotification('No valid data found in CSV file', 'error');
+    }
 }
 
-// Optimized validation
+// Simple validation
 function validateFormData() {
     const location = document.getElementById('location-name')?.value?.trim();
     const lat = document.getElementById('latitude')?.value;
@@ -503,7 +381,6 @@ function validateFormData() {
         return false;
     }
     
-    // Quick check for any metal data
     const metalIds = ['lead', 'mercury', 'cadmium', 'arsenic', 'chromium', 'copper', 'zinc', 'nickel'];
     const hasData = metalIds.some(id => {
         const element = document.getElementById(id);
@@ -519,11 +396,166 @@ function validateFormData() {
     return true;
 }
 
-// Export optimized functions
+// Load demo data function
+function loadDemoData() {
+    const demoData = [
+        {
+            location: 'Mumbai Industrial Zone',
+            latitude: 19.0760,
+            longitude: 72.8777,
+            date: '2024-01-15',
+            metals: {
+                lead: 0.015, mercury: 0.008, cadmium: 0.004, arsenic: 0.018,
+                chromium: 0.045, copper: 0.25, zinc: 1.2, nickel: 0.08
+            }
+        },
+        {
+            location: 'Bangalore Tech Park',
+            latitude: 12.9716,
+            longitude: 77.5946,
+            date: '2024-01-16',
+            metals: {
+                lead: 0.008, mercury: 0.003, cadmium: 0.002, arsenic: 0.012,
+                chromium: 0.025, copper: 0.15, zinc: 0.8, nickel: 0.04
+            }
+        },
+        {
+            location: 'Delhi NCR Sample',
+            latitude: 28.7041,
+            longitude: 77.1025,
+            date: '2024-01-17',
+            metals: {
+                lead: 0.022, mercury: 0.012, cadmium: 0.006, arsenic: 0.025,
+                chromium: 0.065, copper: 0.35, zinc: 1.8, nickel: 0.12
+            }
+        }
+    ];
+    
+    demoData.forEach(data => {
+        data.indices = {
+            hpi: calculateHPI(data.metals),
+            hei: calculateHEI(data.metals),
+            cd: calculateContaminationDegree(data.metals)
+        };
+        waterQualityData.push(data);
+    });
+    
+    updateMapMarkers();
+    updateLeaderboards();
+    updateLocationTable();
+    
+    showNotification('Demo data loaded successfully! 3 sample locations added.', 'success');
+    setTimeout(() => showTab('mapping'), 500);
+}
+
+// Calculate indices function - moved here for completeness
+function calculateIndices() {
+    if (!validateFormData()) return;
+    
+    const metals = {
+        lead: parseFloat(document.getElementById('lead').value) || 0,
+        mercury: parseFloat(document.getElementById('mercury').value) || 0,
+        cadmium: parseFloat(document.getElementById('cadmium').value) || 0,
+        arsenic: parseFloat(document.getElementById('arsenic').value) || 0,
+        chromium: parseFloat(document.getElementById('chromium').value) || 0,
+        copper: parseFloat(document.getElementById('copper').value) || 0,
+        zinc: parseFloat(document.getElementById('zinc').value) || 0,
+        nickel: parseFloat(document.getElementById('nickel').value) || 0
+    };
+    
+    const location = document.getElementById('location-name').value;
+    const lat = parseFloat(document.getElementById('latitude').value);
+    const lng = parseFloat(document.getElementById('longitude').value);
+    const date = document.getElementById('sample-date').value;
+    
+    const hpi = calculateHPI(metals);
+    const hei = calculateHEI(metals);
+    const cd = calculateContaminationDegree(metals);
+    
+    displayResults(hpi, hei, cd);
+    
+    const newData = {
+        location: location,
+        latitude: lat,
+        longitude: lng,
+        date: date,
+        metals: metals,
+        indices: { hpi, hei, cd }
+    };
+    
+    waterQualityData.push(newData);
+    updateMapMarkers();
+    updateLeaderboards();
+    updateLocationTable();
+    
+    showNotification('Pollution indices calculated successfully!', 'success');
+}
+
+// Display results function
+function displayResults(hpi, hei, cd) {
+    document.getElementById('hpi-value').textContent = hpi;
+    document.getElementById('hei-value').textContent = hei;
+    document.getElementById('cd-value').textContent = cd;
+    
+    const hpiStatus = getWaterQualityStatus(parseFloat(hpi));
+    document.getElementById('hpi-status').textContent = hpiStatus.text;
+    document.getElementById('hpi-status').className = `result-status ${hpiStatus.class}`;
+    
+    const heiStatus = hei < 10 ? 'Acceptable' : hei < 20 ? 'Moderate' : 'High';
+    document.getElementById('hei-status').textContent = heiStatus;
+    document.getElementById('hei-status').className = `result-status ${heiStatus.toLowerCase() === 'acceptable' ? 'status-excellent' : 
+        heiStatus.toLowerCase() === 'moderate' ? 'status-good' : 'status-poor'}`;
+    
+    const cdStatus = cd < 5 ? 'Low' : cd < 10 ? 'Moderate' : 'High';
+    document.getElementById('cd-status').textContent = cdStatus + ' Contamination';
+    document.getElementById('cd-status').className = `result-status ${cdStatus.toLowerCase() === 'low' ? 'status-excellent' : 
+        cdStatus.toLowerCase() === 'moderate' ? 'status-good' : 'status-poor'}`;
+    
+    document.getElementById('results').style.display = 'block';
+}
+
+// Water quality status function
+function getWaterQualityStatus(hpi) {
+    if (hpi < 15) return { text: 'Excellent', class: 'status-excellent' };
+    if (hpi < 30) return { text: 'Good', class: 'status-good' };
+    if (hpi < 45) return { text: 'Poor', class: 'status-poor' };
+    return { text: 'Very Poor', class: 'status-very-poor' };
+}
+
+// Clear form function
+function clearForm() {
+    const inputs = ['location-name', 'latitude', 'longitude', 'lead', 'mercury', 'cadmium', 'arsenic', 'chromium', 'copper', 'zinc', 'nickel'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+    });
+    
+    const results = document.getElementById('results');
+    if (results) results.style.display = 'none';
+    
+    showNotification('Form cleared successfully', 'info');
+}
+
+// Download template function
+function downloadTemplate() {
+    const csvContent = "location,latitude,longitude,date,lead,mercury,cadmium,arsenic,chromium,copper,zinc,nickel\n" +
+        "Sample Location 1,18.5204,73.8567,2024-01-15,0.005,0.002,0.001,0.008,0.02,0.1,0.5,0.03\n" +
+        "Sample Location 2,19.0760,72.8777,2024-01-16,0.012,0.004,0.002,0.015,0.03,0.15,0.8,0.05";
+        
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hmpi_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Export global functions
 window.showTab = showTab;
 window.showNotification = showNotification;
-
- 
-
-
+window.loadDemoData = loadDemoData;
+window.calculateIndices = calculateIndices;
+window.clearForm = clearForm;
+window.downloadTemplate = downloadTemplate;
 
