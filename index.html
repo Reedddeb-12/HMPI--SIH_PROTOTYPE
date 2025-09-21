@@ -8,7 +8,6 @@
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Local Stylesheets -->
     <link rel="stylesheet" href="SRC/css/styles.css">
@@ -32,28 +31,9 @@
 
     <section class="hero">
         <div class="container">
-            <div class="hero-content">
-                <h1>Heavy Metal Pollution Index</h1>
-                <p>Advanced water quality monitoring and health risk prediction platform powered by AI</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-number" data-target="8">0</div>
-                        <div class="stat-label">Heavy Metals Analyzed</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-target="3">0</div>
-                        <div class="stat-label">Pollution Indices</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-target="8">0</div>
-                        <div class="stat-label">Disease Predictions</div>
-                    </div>
-                </div>
-                <button class="cta-button" onclick="showTab('data-entry')">
-                    <i class="fas fa-rocket"></i>
-                    Start Monitoring
-                </button>
-            </div>
+            <h1>Heavy Metal Pollution Index</h1>
+            <p>Advanced water quality monitoring and health risk prediction platform</p>
+            <button class="cta-button" onclick="showTab('data-entry')">Start Monitoring</button>
         </div>
     </section>
 
@@ -144,29 +124,17 @@
                 <div class="form-section">
                     <h3><i class="fas fa-upload"></i> Bulk Data Upload</h3>
                     <div class="upload-area" id="upload-area">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <h4>Drop your CSV files here</h4>
-                        <p>or click to browse files</p>
-                        <div class="supported-formats">
-                            <span class="format-badge">CSV</span>
-                            <span class="format-badge">Excel</span>
-                        </div>
-                        <input type="file" id="file-upload" accept=".csv,.xlsx,.xls" style="display: none;">
-                        <button class="cta-button upload-btn" onclick="document.getElementById('file-upload').click()">
-                            <i class="fas fa-folder-open"></i>
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
+                        <p style="font-size: 1.2rem; margin-bottom: 10px;">Drag & drop CSV files here or click to browse</p>
+                        <p style="color: #666;">Supported formats: CSV</p>
+                        <input type="file" id="file-upload" accept=".csv" style="display: none;">
+                        <button class="cta-button" style="margin-top: 15px;" onclick="document.getElementById('file-upload').click()">
                             Choose File
                         </button>
                     </div>
-                    <div class="upload-tools">
-                        <button class="calculate-btn template-btn" onclick="downloadTemplate()">
-                            <i class="fas fa-download"></i> Download Template
-                        </button>
-                        <button class="calculate-btn demo-btn" onclick="loadDemoData()">
-                            <i class="fas fa-database"></i> Load Demo Data
-                        </button>
-                    </div>
+                    <button class="cta-button" onclick="downloadTemplate()" style="margin-top: 15px;">
+                        <i class="fas fa-download"></i> Download Template
+                    </button>
                 </div>
 
                 <div style="text-align: center;">
@@ -392,88 +360,6 @@
         </div>
     </main>
 
-    <!-- Features Section -->
-    <section class="features-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Powerful Features</h2>
-                <p>Advanced tools for comprehensive water quality monitoring and health risk assessment</p>
-            </div>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <i class="fas fa-brain"></i>
-                    <h3>AI-Powered Analysis</h3>
-                    <p>Machine learning algorithms predict health risks based on heavy metal exposure patterns and medical research.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <h3>Interactive Mapping</h3>
-                    <p>Visualize pollution data across locations with detailed geographic information and trend analysis.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Real-time Analytics</h3>
-                    <p>Dynamic charts and graphs provide instant insights into pollution trends and contamination patterns.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-file-medical"></i>
-                    <h3>Health Reports</h3>
-                    <p>Comprehensive medical reports with actionable recommendations and follow-up schedules.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>HMPI Monitor</h3>
-                    <p>Advanced water quality monitoring platform for environmental health protection.</p>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h4>Features</h4>
-                    <ul>
-                        <li><a href="#data-entry">Data Entry</a></li>
-                        <li><a href="#disease-prediction">Disease Prediction</a></li>
-                        <li><a href="#mapping">Interactive Maps</a></li>
-                        <li><a href="#analytics">Analytics</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="#" onclick="downloadTemplate()">CSV Template</a></li>
-                        <li><a href="#" onclick="loadDemoData()">Demo Data</a></li>
-                        <li><a href="#" onclick="showTab('analytics')">Reports</a></li>
-                        <li><a href="docs/API.md">Documentation</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Health Standards</h4>
-                    <ul>
-                        <li><a href="https://who.int" target="_blank">WHO Guidelines</a></li>
-                        <li><a href="https://epa.gov" target="_blank">EPA Standards</a></li>
-                        <li><a href="#" onclick="showTab('data-entry')">Permissible Limits</a></li>
-                        <li><a href="#" onclick="toggleChatbot()">Get Help</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 HMPI Monitor. Open source project for environmental health monitoring.</p>
-                <div class="footer-disclaimer">
-                    <small>This tool is for educational and screening purposes. Always consult healthcare professionals for medical advice.</small>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <!-- AI Chatbot -->
     <div class="chatbot-container">
         <button class="chatbot-toggle" onclick="toggleChatbot()">
@@ -515,5 +401,5 @@
     <script src="SRC/js/main.js"></script>
 </body>
 </html>
-
+  
 
