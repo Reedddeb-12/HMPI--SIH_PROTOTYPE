@@ -898,4 +898,3 @@ function generateReport() {
 
 console.log('HMPI Application main.js loaded successfully!');
 
-
