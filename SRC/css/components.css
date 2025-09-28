@@ -600,7 +600,8 @@
     .social-links {
         justify-content: center;
     }
-}50%;
+}
+.general{
     width: 45px;
     height: 45px;
     cursor: pointer;
@@ -774,7 +775,7 @@
     }
 }/* Results Section Styles */
 .results-section {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #5ac0de, #aea8b3);
     color: white;
     padding: 30px;
     border-radius: 15px;
@@ -1002,7 +1003,6 @@
         right: 5vw;
     }
 }
-
 
 
 
