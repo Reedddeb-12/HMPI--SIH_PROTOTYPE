@@ -1,4 +1,4 @@
-# HMPI Monitor - PURE-Intelligence ( Pollution & Utility Risk Evaluator)  Application
+# PURE-Intelligence ( Pollution & Utility Risk Evaluator)  Application
 
 A comprehensive web application for monitoring and analyzing heavy metal pollution in water sources. This tool calculates pollution indices, predicts health risks, and provides interactive visualizations for environmental monitoring.
 
