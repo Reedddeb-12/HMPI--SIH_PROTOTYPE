@@ -411,7 +411,7 @@
     
     .main-content {
         background: #2d3748;
-        color: var(--text-primary);
+        color: #101010;
     }
     
     .form-section {
@@ -434,12 +434,12 @@
     
     .data-table {
         background: #374151;
-        color: var(--text-primary);
+        color:#101010;
     }
     
     .data-table th {
         background: #4a5568;
-        color: var(--text-primary);
+        color:#101010;
     }
 }/* Upload Area */
 .upload-area {
@@ -781,11 +781,14 @@
 }
 
 body {
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Orbitron', 'Exo 2', 'Rajdhani', Rajdhani;
+    line-height: 1.5;
     min-height: 100vh;
-    color: #333;
+    color: #0f0101;
+    background-image: url(https://i.postimg.cc/xCZySvm2/Gemini-Generated-Image-xnwek3xnwek3xnwe-1.png);
+    background-repeat: no-repeat; 
+    background-size: cover; 
+    background-attachment: fixed;
 }
 
 .container {
@@ -854,8 +857,10 @@ nav {
 /* Hero Section - Simplified */
 .hero {
     text-align: center;
+    font-size: 3rem;
+    font-weight:800;
     padding: 6rem 0;
-    color: white;
+    color: rgb(35, 33, 33);
     position: relative;
     min-height: 70vh;
     display: flex;
@@ -872,7 +877,7 @@ nav {
     font-weight: 800;
     margin-bottom: 1.5rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    background: linear-gradient(45deg, #ffffff, #f8f9ff);
+    background: linear-gradient(45deg, #0c0000, #010317);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -918,7 +923,7 @@ nav {
 
 /* Button Styles - No Animations */
 .cta-button {
-    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    background: linear-gradient(45deg, #577a98, #53c8ba);
     color: white;
     padding: 18px 36px;
     border: none;
@@ -1395,7 +1400,7 @@ nav {
         flex-direction: column;
         gap: 10px;
     }
-}
+}   .general{
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1708,7 +1713,6 @@ nav {
 
     
  
-
 
 
 
