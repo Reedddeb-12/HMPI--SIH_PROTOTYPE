@@ -458,7 +458,13 @@ function showTab(tabName) {
     tabButtons.forEach(button => button.classList.remove('active'));
     
     document.getElementById(tabName).classList.add('active');
-    event.target.closest('.tab').classList.add('active');
+    
+    // Find and activate the corresponding tab button
+    tabButtons.forEach(button => {
+        if (button.textContent.toLowerCase().includes(tabName.replace('-', ' ').split(' ')[0])) {
+            button.classList.add('active');
+        }
+    });
     
     if (tabName === 'mapping' && map) {
         setTimeout(() => {
