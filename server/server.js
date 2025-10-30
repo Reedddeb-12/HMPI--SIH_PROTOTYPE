@@ -28,17 +28,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Initialize database and start server
-db.initialize()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`HMPI Backend running on http://localhost:${PORT}`);
-      console.log(`API available at http://localhost:${PORT}/api`);
-    });
-  })
-  .catch(err => {
-    console.error('Failed to initialize database:', err);
-    process.exit(1);
+// Initialize database
+db.initialize().catch(err => {
+  console.error('Failed to initialize database:', err);
+});
+
+// For local development
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`HMPI Backend running on http://localhost:${PORT}`);
+    console.log(`API available at http://localhost:${PORT}/api`);
   });
+}
 
 module.exports = app;
