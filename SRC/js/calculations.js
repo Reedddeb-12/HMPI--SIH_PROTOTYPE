@@ -21,37 +21,41 @@ function calculateHPI(metals) {
     };
     
     for (const [metal, concentration] of Object.entries(metals)) {
-        if (concentration > 0 && permissibleLimits[metal]) {
+        const conc = parseFloat(concentration);
+        if (conc > 0 && permissibleLimits[metal]) {
             const weight = weights[metal];
-            const subIndex = (concentration / permissibleLimits[metal]) * 100;
+            const subIndex = (conc / permissibleLimits[metal]) * 100;
             weightedSum += weight * subIndex;
             totalWeight += weight;
         }
     }
     
-    return totalWeight > 0 ? (weightedSum / totalWeight).toFixed(2) : '0.00';
+    const result = totalWeight > 0 ? weightedSum / totalWeight : 0;
+    return parseFloat(result.toFixed(2));
 }
 
 // Heavy Metal Evaluation Index (HEI) Calculation
 function calculateHEI(metals) {
     let hei = 0;
     for (const [metal, concentration] of Object.entries(metals)) {
-        if (concentration > 0 && permissibleLimits[metal]) {
-            hei += concentration / permissibleLimits[metal];
+        const conc = parseFloat(concentration);
+        if (conc > 0 && permissibleLimits[metal]) {
+            hei += conc / permissibleLimits[metal];
         }
     }
-    return hei.toFixed(2);
+    return parseFloat(hei.toFixed(2));
 }
 
 // Contamination Degree (Cd) Calculation
 function calculateContaminationDegree(metals) {
     let cd = 0;
     for (const [metal, concentration] of Object.entries(metals)) {
-        if (concentration > 0 && permissibleLimits[metal]) {
-            cd += concentration / permissibleLimits[metal];
+        const conc = parseFloat(concentration);
+        if (conc > 0 && permissibleLimits[metal]) {
+            cd += conc / permissibleLimits[metal];
         }
     }
-    return cd.toFixed(2);
+    return parseFloat(cd.toFixed(2));
 }
 
 // Water Quality Status Classification
