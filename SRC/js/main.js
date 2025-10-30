@@ -411,15 +411,59 @@ let markers = [];
 let waterQualityData = [];
 let chartInstances = {};
 
+// Notification function
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+    `;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    initializeMap();
-    initializeEventListeners();
-    initializeCharts();
-    initializeMLModel();
+    console.log('Initializing HMPI Application...');
     
-    // Set today's date
-    document.getElementById('sample-date').valueAsDate = new Date();
+    try {
+        initializeMap();
+        initializeEventListeners();
+        initializeCharts();
+        initializeMLModel();
+        
+        // Set today's date
+        const dateInput = document.getElementById('sample-date');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
+        }
+        
+        console.log('HMPI Application initialized successfully!');
+    } catch (error) {
+        console.error('Error initializing application:', error);
+        showNotification('Error initializing application. Please refresh the page.', 'error');
+    }
 });
 
 // Initialize ML Model Status
