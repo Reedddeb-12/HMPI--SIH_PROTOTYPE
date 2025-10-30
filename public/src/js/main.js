@@ -451,30 +451,57 @@ function initializeMLModel() {
 
 // Tab management
 function showTab(tabName) {
+    // Remove active class from all tabs and buttons
     const tabs = document.querySelectorAll('.tab-content');
     const tabButtons = document.querySelectorAll('.tab');
     
     tabs.forEach(tab => tab.classList.remove('active'));
     tabButtons.forEach(button => button.classList.remove('active'));
     
-    document.getElementById(tabName).classList.add('active');
+    // Activate the selected tab
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        
+        // Scroll to the main content area smoothly
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
     
-    // Find and activate the corresponding tab button
+    // Find and activate the corresponding tab button in the tabs section
     tabButtons.forEach(button => {
-        if (button.textContent.toLowerCase().includes(tabName.replace('-', ' ').split(' ')[0])) {
+        const buttonText = button.textContent.toLowerCase().trim();
+        const tabNameFormatted = tabName.replace('-', ' ').toLowerCase();
+        
+        if (buttonText.includes(tabNameFormatted.split(' ')[0]) || 
+            (tabName === 'data-entry' && buttonText.includes('data')) ||
+            (tabName === 'disease-prediction' && buttonText.includes('disease')) ||
+            (tabName === 'mapping' && buttonText.includes('map')) ||
+            (tabName === 'leaderboard' && buttonText.includes('leaderboard')) ||
+            (tabName === 'analytics' && buttonText.includes('analytics'))) {
             button.classList.add('active');
         }
     });
     
-    if (tabName === 'mapping' && map) {
+    // Special handling for map tab
+    if (tabName === 'mapping' && typeof map !== 'undefined' && map) {
         setTimeout(() => {
             map.invalidateSize();
-            updateMapMarkers();
+            if (typeof updateMapMarkers === 'function') {
+                updateMapMarkers();
+            }
         }, 100);
     }
     
+    // Special handling for analytics tab
     if (tabName === 'analytics') {
-        setTimeout(updateCharts, 100);
+        setTimeout(() => {
+            if (typeof updateCharts === 'function') {
+                updateCharts();
+            }
+        }, 100);
     }
 }
 
