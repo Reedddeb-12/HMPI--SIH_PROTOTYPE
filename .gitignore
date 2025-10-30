@@ -16,3 +16,6 @@ server/.env
 .idea/
 *.swp
 *.swo
+
+# Public folder (generated)
+public/
