@@ -12,16 +12,13 @@
       "dest": "server/server.js"
     },
     {
-      "src": "/SRC/(.*)",
-      "dest": "/SRC/$1"
-    },
-    {
-      "src": "/Data/(.*)",
-      "dest": "/Data/$1"
-    },
-    {
-      "src": "/(.*)",
+      "src": "/(.*\\.(css|js|html|png|jpg|jpeg|gif|svg|ico|json|csv))",
       "dest": "/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
     }
-  ]
+  ],
+  "outputDirectory": "."
 }
