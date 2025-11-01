@@ -672,6 +672,11 @@ function parseCSV(csvText) {
         if (typeof updateEnergySavings === 'function') {
             updateEnergySavings(processedCount);
         }
+        
+        // Update carbon impact for bulk import
+        if (typeof updateCarbonImpact === 'function') {
+            updateCarbonImpact(processedCount);
+        }
     } else {
         showNotification('No valid data found in CSV file', 'error');
     }
@@ -734,6 +739,11 @@ function calculateIndices() {
     // Update energy savings
     if (typeof updateEnergySavings === 'function') {
         updateEnergySavings(1);
+    }
+    
+    // Update carbon impact
+    if (typeof updateCarbonImpact === 'function') {
+        updateCarbonImpact(1);
     }
     
     // Display treatment recommendations
