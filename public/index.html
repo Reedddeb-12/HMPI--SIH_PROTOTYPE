@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/src/css/styles.css">
     <link rel="stylesheet" href="/src/css/components.css">
     <link rel="stylesheet" href="/src/css/notifications.css">
+    <link rel="stylesheet" href="/src/css/energy-climate.css">
 </head>
 <body>
     <header>
@@ -46,6 +47,9 @@
                 </button>
                 <button class="tab" onclick="showTab('disease-prediction')">
                     <i class="fas fa-heartbeat"></i> Disease Prediction
+                </button>
+                <button class="tab" onclick="showTab('climate-energy')">
+                    <i class="fas fa-leaf"></i> Climate & Energy
                 </button>
                 <button class="tab" onclick="showTab('mapping')">
                     <i class="fas fa-map"></i> Interactive Map
@@ -272,6 +276,97 @@
                 </div>
             </div>
 
+            <!-- Climate & Energy Tab -->
+            <div id="climate-energy" class="tab-content">
+                <h2><i class="fas fa-leaf"></i> Climate & Energy Efficiency Dashboard</h2>
+                <p>Monitor environmental impact, energy savings, and climate-driven contamination risks</p>
+
+                <!-- Energy Savings Dashboard -->
+                <div class="form-section">
+                    <h3><i class="fas fa-bolt"></i> Energy & Carbon Impact</h3>
+                    <div id="energy-savings-dashboard">
+                        <!-- Energy dashboard will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Weather & Climate Widget -->
+                <div class="form-section">
+                    <h3><i class="fas fa-cloud-sun"></i> Current Weather & Climate Conditions</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div id="weather-widget">
+                            <!-- Weather widget will be populated here -->
+                        </div>
+                        <div>
+                            <h4>7-Day Forecast</h4>
+                            <div id="forecast-container" class="forecast-container">
+                                <!-- Forecast will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Climate Alerts -->
+                <div class="form-section">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Climate-Based Contamination Alerts</h3>
+                    <div id="climate-alerts">
+                        <!-- Climate alerts will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Contamination Risk Predictions -->
+                <div class="form-section">
+                    <div id="contamination-predictions">
+                        <!-- Predictions will be populated here -->
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="calculate-btn" onclick="predictContaminationRisk()">
+                            <i class="fas fa-chart-line"></i> Generate 7-Day Risk Forecast
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Treatment Energy Optimizer -->
+                <div class="form-section">
+                    <div id="treatment-recommendations">
+                        <!-- Treatment recommendations will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Sustainability Score -->
+                <div class="form-section">
+                    <div id="sustainability-score">
+                        <!-- Sustainability score will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Climate Correlation Analysis -->
+                <div class="form-section">
+                    <h3><i class="fas fa-chart-scatter"></i> Climate-Contamination Correlation</h3>
+                    <canvas id="climate-correlation-chart" width="400" height="200"></canvas>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="calculate-btn" onclick="analyzeClimateCorrelation()">
+                            <i class="fas fa-sync"></i> Analyze Correlation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Key Configuration -->
+                <div class="form-section">
+                    <h3><i class="fas fa-key"></i> Weather API Configuration (Optional)</h3>
+                    <div style="background: white; padding: 20px; border-radius: 10px;">
+                        <p>To enable live weather data, add your OpenWeatherMap API key:</p>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="weather-api-key">OpenWeatherMap API Key</label>
+                            <input type="text" id="weather-api-key" placeholder="Enter your API key">
+                            <small style="color: #7f8c8d;">Get a free API key at <a href="https://openweathermap.org/api" target="_blank">openweathermap.org</a></small>
+                        </div>
+                        <button class="calculate-btn" onclick="saveWeatherAPIKey()" style="margin-top: 10px;">
+                            <i class="fas fa-save"></i> Save API Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Mapping Tab -->
             <div id="mapping" class="tab-content">
                 <h2>Interactive Pollution Map</h2>
@@ -395,6 +490,8 @@
     <!-- Local Scripts -->
     <script src="/src/js/utils.js"></script>
     <script src="/src/js/calculations.js"></script>
+    <script src="/src/js/energy-calculator.js"></script>
+    <script src="/src/js/climate-integration.js"></script>
     <script src="/src/js/ml-model.js"></script>
     <script src="/src/js/map.js"></script>
     <script src="/src/js/charts.js"></script>

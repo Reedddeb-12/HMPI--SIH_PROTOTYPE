@@ -667,6 +667,11 @@ function parseCSV(csvText) {
         updateMapMarkers();
         updateLeaderboards();
         updateLocationTable();
+        
+        // Update energy savings for bulk import
+        if (typeof updateEnergySavings === 'function') {
+            updateEnergySavings(processedCount);
+        }
     } else {
         showNotification('No valid data found in CSV file', 'error');
     }
@@ -725,6 +730,16 @@ function calculateIndices() {
     updateMapMarkers();
     updateLeaderboards();
     updateLocationTable();
+    
+    // Update energy savings
+    if (typeof updateEnergySavings === 'function') {
+        updateEnergySavings(1);
+    }
+    
+    // Display treatment recommendations
+    if (typeof displayTreatmentRecommendations === 'function') {
+        displayTreatmentRecommendations(hpi);
+    }
     
     showNotification('Pollution indices calculated successfully!', 'success');
 }
