@@ -181,6 +181,8 @@ async function exportFromBackend() {
 // Initialize - Load data on page load
 async function initializeAPI() {
     try {
+        console.log('🔄 Initializing API connection...');
+        
         // Check if backend is available
         const healthResponse = await fetch(`${API_BASE_URL}/health`);
         
@@ -190,23 +192,48 @@ async function initializeAPI() {
             // Load existing data from backend
             const backendData = await loadFromBackend();
             if (backendData.length > 0) {
-                waterQualityData.push(...backendData);
-                updateMapMarkers();
-                updateLeaderboards();
-                updateLocationTable();
-                console.log(`✓ Loaded ${backendData.length} records from MongoDB`);
+                // Ensure waterQualityData exists
+                if (typeof waterQualityData !== 'undefined') {
+                    // Clear existing data to avoid duplicates
+                    waterQualityData.length = 0;
+                    waterQualityData.push(...backendData);
+                    
+                    // Update UI components if functions are available
+                    if (typeof updateMapMarkers === 'function') {
+                        updateMapMarkers();
+                    }
+                    if (typeof updateLeaderboards === 'function') {
+                        updateLeaderboards();
+                    }
+                    if (typeof updateLocationTable === 'function') {
+                        updateLocationTable();
+                    }
+                    
+                    console.log(`✓ Loaded ${backendData.length} records from MongoDB`);
+                    showNotification(`Loaded ${backendData.length} records from database`, 'success');
+                } else {
+                    console.warn('⚠ waterQualityData not yet defined, storing for later');
+                    // Store data temporarily
+                    window._pendingBackendData = backendData;
+                }
+            } else {
+                console.log('ℹ No data in database yet');
             }
         } else {
             console.warn('⚠ Backend API not available, using local storage');
         }
     } catch (error) {
-        console.warn('⚠ Backend API not available, using local storage');
+        console.warn('⚠ Backend API not available:', error.message);
     }
 }
 
-// Initialize on page load
+// Initialize on page load - wait for DOM to be ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeAPI);
+    document.addEventListener('DOMContentLoaded', () => {
+        // Wait a bit for other scripts to initialize
+        setTimeout(initializeAPI, 500);
+    });
 } else {
-    initializeAPI();
+    // DOM already loaded, wait a bit for other scripts
+    setTimeout(initializeAPI, 500);
 }

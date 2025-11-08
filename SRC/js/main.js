@@ -459,6 +459,20 @@ document.addEventListener('DOMContentLoaded', function() {
             dateInput.valueAsDate = new Date();
         }
         
+        // Check for pending backend data
+        setTimeout(() => {
+            if (window._pendingBackendData && window._pendingBackendData.length > 0) {
+                console.log('📥 Loading pending backend data...');
+                waterQualityData.push(...window._pendingBackendData);
+                updateMapMarkers();
+                updateLeaderboards();
+                updateLocationTable();
+                console.log(`✓ Loaded ${window._pendingBackendData.length} records from MongoDB`);
+                showNotification(`Loaded ${window._pendingBackendData.length} records from database`, 'success');
+                delete window._pendingBackendData;
+            }
+        }, 1000);
+        
         console.log('HMPI Application initialized successfully!');
     } catch (error) {
         console.error('Error initializing application:', error);
