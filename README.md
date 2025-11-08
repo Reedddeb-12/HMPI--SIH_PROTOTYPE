@@ -1,26 +1,40 @@
-# PURE-Intelligence ( Pollution & Utility Risk Evaluator)  Application
+# PURE-Intelligence (Pollution & Utility Risk Evaluator)
 
-A comprehensive web application for monitoring and analyzing heavy metal pollution in water sources. This tool calculates pollution indices, predicts health risks, and provides interactive visualizations for environmental monitoring.
+A comprehensive AI-powered web application for monitoring and analyzing heavy metal pollution in water sources. Built for Smart India Hackathon with focus on climate change awareness and energy efficiency.
 
-## Features
+## 🌟 Key Features
 
-### Core Functionality
-- **Heavy Metal Pollution Index (HPI)** calculation with weighted metal concentrations
-- **Heavy Metal Evaluation Index (HEI)** assessment based on permissible limits
-- **Contamination Degree (Cd)** analysis for cumulative pollution impact
-- **AI-powered Health Risk Prediction** with detailed risk factor analysis
+### 🔬 Core Functionality
+- **Heavy Metal Pollution Index (HPI)** - Weighted metal concentration analysis
+- **Heavy Metal Evaluation Index (HEI)** - Assessment based on WHO/EPA limits
+- **Contamination Degree (Cd)** - Cumulative pollution impact analysis
+- **AI Disease Prediction** - ML-powered health risk assessment for 8 diseases
+- **MongoDB Integration** - Persistent data storage with automatic calculations
 
-### Interactive Components
-- **Interactive Mapping** using Leaflet.js with clickable markers
-- **Data Visualization** with Chart.js for trends and distribution analysis
-- **Real-time Chatbot Assistant** for user guidance and support
-- **Leaderboard System** ranking locations by pollution levels
+### 🤖 AI-Powered Chatbot
+- **Google Gemini Pro Integration** - Intelligent, context-aware responses
+- **Dual-Mode Operation** - AI-powered + enhanced fallback responses
+- **Markdown Formatting** - Rich text responses with formatting
+- **Context Awareness** - Knows your application state and data
 
-### Data Management
-- **CSV Import/Export** functionality for bulk data processing
-- **Template Download** for standardized data entry
-- **Report Generation** with comprehensive pollution analysis
-- **Drag & Drop File Upload** for user-friendly data input
+### 🌍 Climate & Energy Features
+- **Weather Integration** - Real-time climate data and contamination predictions
+- **Energy Tracking** - 99% energy reduction vs traditional lab testing
+- **Carbon Impact** - Real-time CO₂ savings counter with milestones
+- **Treatment Optimization** - Energy-efficient purification recommendations
+
+### 🗺️ Interactive Components
+- **Interactive Mapping** - Leaflet.js with color-coded pollution markers
+- **Data Visualization** - Chart.js for trends and distribution analysis
+- **Leaderboard System** - Rankings by pollution levels
+- **Analytics Dashboard** - Comprehensive statistics and reports
+
+### 📊 Data Management
+- **CSV Import/Export** - Bulk data processing with validation
+- **MongoDB Backend** - Persistent storage with automatic calculations
+- **Template Download** - Standardized data entry format
+- **Report Generation** - Professional PDF reports
+- **Drag & Drop Upload** - User-friendly file handling
 
 ## Technologies Used
 
