@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/chatbot.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .test-questions {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .test-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status {
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .status.ai-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.fallback {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🤖 AI Chatbot Test</h1>
+        <p>Test the enhanced chatbot with various questions. The chatbot will use AI if configured, or fallback to
+            enhanced rule-based responses.</p>
+
+        <div id="status" class="status">
+            <strong>Status:</strong> <span id="status-text">Checking...</span>
+        </div>
+
+        <div class="test-questions">
+            <h3>Try These Questions:</h3>
+            <button class="test-btn" onclick="testQuestion('What is HPI?')">What is HPI?</button>
+            <button class="test-btn" onclick="testQuestion('How do I upload CSV data?')">How do I upload CSV
+                data?</button>
+            <button class="test-btn" onclick="testQuestion('What are the health risks of lead?')">What are the health
+                risks of lead?</button>
+            <button class="test-btn" onclick="testQuestion('Tell me about climate integration')">Tell me about climate
+                integration</button>
+            <button class="test-btn" onclick="testQuestion('How does energy tracking work?')">How does energy tracking
+                work?</button>
+            <button class="test-btn" onclick="testQuestion('What are WHO limits for heavy metals?')">What are WHO
+                limits?</button>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <button class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <div>
+                    <i class="fas fa-robot"></i> PURE-I Assistant <span class="ai-badge">AI Powered</span>
+                </div>
+                <button onclick="toggleChatbot()"
+                    style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">×</button>
+            </div>
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="message bot">
+                    <strong>🤖 PURE-I Assistant:</strong> Hello! I'm your AI-powered assistant. Ask me anything about
+                    water quality monitoring!
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbot-input" placeholder="Ask me about pollution monitoring..."
+                    onkeypress="handleChatKeyPress(event)">
+                <button onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/src/js/chatbot-config.js"></script>
+    <script src="/src/js/chatbot.js"></script>
+    <script>
+        // Mock waterQualityData for testing
+        let waterQualityData = [
+            {
+                location: "Test Site 1",
+                indices: { hpi: 45.5, hei: 3.2, cd: 3.2 }
+            },
+            {
+                location: "Test Site 2",
+                indices: { hpi: 78.3, hei: 5.6, cd: 5.6 }
+            }
+        ];
+
+        // Check chatbot status
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusEl = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+
+            if (typeof CHATBOT_CONFIG !== 'undefined' && CHATBOT_CONFIG.GEMINI_API_KEY && CHATBOT_CONFIG.GEMINI_API_KEY.length > 20) {
+                statusEl.className = 'status ai-enabled';
+                statusText.textContent = '✅ AI Mode Enabled (Using Gemini API)';
+            } else {
+                statusEl.className = 'status fallback';
+                statusText.textContent = '⚠️ Fallback Mode (Enhanced Rule-Based Responses)';
+            }
+        });
+
+        function testQuestion(question) {
+            toggleChatbot();
+            setTimeout(() => {
+                document.getElementById('chatbot-input').value = question;
+                sendChatMessage();
+            }, 300);
+        }
+    </script>
+</body>
+
+</html>

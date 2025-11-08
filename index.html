@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/src/css/notifications.css">
     <link rel="stylesheet" href="/src/css/energy-climate.css">
     <link rel="stylesheet" href="/src/css/carbon-impact.css">
+    <link rel="stylesheet" href="/src/css/chatbot.css">
 </head>
 <body>
     <header>
@@ -568,13 +569,13 @@
         <div class="chatbot-window" id="chatbot-window">
             <div class="chatbot-header">
                 <div>
-                    <i class="fas fa-robot"></i> HMPI Assistant
+                    <i class="fas fa-robot"></i> PURE-I Assistant <span class="ai-badge">AI Powered</span>
                 </div>
                 <button onclick="toggleChatbot()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">×</button>
             </div>
             <div class="chatbot-messages" id="chatbot-messages">
                 <div class="message bot">
-                    <strong>HMPI Assistant:</strong> Hello! I'm here to help you understand heavy metal pollution and use this application. Ask me about pollution indices, health risks, or how to use any features!
+                    <strong>🤖 PURE-I Assistant:</strong> Hello! I'm your AI-powered assistant for water quality monitoring. I can help you with:<br><br>• 📊 Pollution analysis (HPI, HEI, Cd)<br>• ⚕️ Health risk assessment<br>• 📤 Data management<br>• 🌡️ Climate integration<br>• ⚡ Energy tracking<br><br><strong>Ask me anything!</strong>
                 </div>
             </div>
             <div class="chatbot-input">
@@ -601,6 +602,7 @@
     <script src="/src/js/ml-model.js"></script>
     <script src="/src/js/map.js"></script>
     <script src="/src/js/charts.js"></script>
+    <script src="/src/js/chatbot-config.js"></script>
     <script src="/src/js/chatbot.js"></script>
     <script src="/src/js/main.js"></script>
 </body>

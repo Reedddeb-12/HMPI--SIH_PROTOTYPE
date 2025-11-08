@@ -107,16 +107,21 @@ async function loadFromBackend() {
 // Import CSV to backend
 async function importCSVToBackend(file) {
     try {
+        console.log('Importing CSV to backend:', file.name);
+        
         const formData = new FormData();
         formData.append('file', file);
         
         const response = await fetch(`${API_BASE_URL}/measurements/import`, {
             method: 'POST',
             body: formData
+            // Don't set Content-Type header - browser will set it with boundary
         });
         
         if (!response.ok) {
-            throw new Error('Failed to import CSV');
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            throw new Error(`Failed to import CSV: ${response.status} ${errorText}`);
         }
         
         const result = await response.json();

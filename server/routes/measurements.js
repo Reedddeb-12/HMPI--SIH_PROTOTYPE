@@ -8,7 +8,9 @@ const Measurement = require('../models/Measurement');
 const Location = require('../models/Location');
 const { calculateIndices } = require('../utils/calculations');
 
-const upload = multer({ dest: 'uploads/' });
+const path = require('path');
+const uploadDir = path.join(__dirname, '../uploads');
+const upload = multer({ dest: uploadDir });
 
 // Get all measurements
 router.get('/', async (req, res) => {

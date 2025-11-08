@@ -584,10 +584,21 @@ function handleFileDrop(e) {
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) {
+        console.log('File selected:', file.name, file.type, file.size);
+        
+        // Check if file is CSV
+        if (!file.name.endsWith('.csv')) {
+            showNotification('Please upload a CSV file', 'error');
+            return;
+        }
+        
         // Try to import to backend first
         if (typeof importCSVToBackend === 'function') {
+            showNotification('Uploading CSV to database...', 'info');
+            
             importCSVToBackend(file).then(result => {
                 showNotification(`Successfully imported ${result.imported} records to database!`, 'success');
+                
                 // Reload data from backend
                 if (typeof loadFromBackend === 'function') {
                     loadFromBackend().then(data => {
@@ -598,10 +609,13 @@ function handleFileSelect(e) {
                     });
                 }
             }).catch(err => {
+                console.error('Backend import failed, using local processing:', err);
+                showNotification('Backend unavailable, processing locally...', 'info');
                 // Fallback to local processing
                 processFile(file);
             });
         } else {
+            console.log('importCSVToBackend not available, using local processing');
             processFile(file);
         }
     }
