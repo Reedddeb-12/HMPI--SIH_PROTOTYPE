@@ -584,7 +584,26 @@ function handleFileDrop(e) {
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) {
-        processFile(file);
+        // Try to import to backend first
+        if (typeof importCSVToBackend === 'function') {
+            importCSVToBackend(file).then(result => {
+                showNotification(`Successfully imported ${result.imported} records to database!`, 'success');
+                // Reload data from backend
+                if (typeof loadFromBackend === 'function') {
+                    loadFromBackend().then(data => {
+                        waterQualityData = data;
+                        updateMapMarkers();
+                        updateLeaderboards();
+                        updateLocationTable();
+                    });
+                }
+            }).catch(err => {
+                // Fallback to local processing
+                processFile(file);
+            });
+        } else {
+            processFile(file);
+        }
     }
 }
 
@@ -731,27 +750,37 @@ function calculateIndices() {
         indices: { hpi, hei, cd }
     };
     
-    waterQualityData.push(newData);
-    updateMapMarkers();
-    updateLeaderboards();
-    updateLocationTable();
-    
-    // Update energy savings
-    if (typeof updateEnergySavings === 'function') {
-        updateEnergySavings(1);
-    }
-    
-    // Update carbon impact
-    if (typeof updateCarbonImpact === 'function') {
-        updateCarbonImpact(1);
-    }
-    
-    // Display treatment recommendations
-    if (typeof displayTreatmentRecommendations === 'function') {
-        displayTreatmentRecommendations(hpi);
-    }
-    
-    showNotification('Pollution indices calculated successfully!', 'success');
+    // Save to backend API
+    saveToBackend(newData).then(() => {
+        waterQualityData.push(newData);
+        updateMapMarkers();
+        updateLeaderboards();
+        updateLocationTable();
+        
+        // Update energy savings
+        if (typeof updateEnergySavings === 'function') {
+            updateEnergySavings(1);
+        }
+        
+        // Update carbon impact
+        if (typeof updateCarbonImpact === 'function') {
+            updateCarbonImpact(1);
+        }
+        
+        // Display treatment recommendations
+        if (typeof displayTreatmentRecommendations === 'function') {
+            displayTreatmentRecommendations(hpi);
+        }
+        
+        showNotification('Pollution indices calculated and saved to database!', 'success');
+    }).catch(err => {
+        // Fallback to local storage if API fails
+        waterQualityData.push(newData);
+        updateMapMarkers();
+        updateLeaderboards();
+        updateLocationTable();
+        showNotification('Saved locally (backend unavailable)', 'info');
+    });
 }
 
 function displayResults(hpi, hei, cd) {
